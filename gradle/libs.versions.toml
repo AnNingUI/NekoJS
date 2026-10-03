@@ -19,7 +19,7 @@ log4j = "2.20.0"
 icu4j = "77.1"
 junitBom = "6.0.0"
 junitLegacy = "5.14.3"           # NeoForge 平台测试用 5.x（common/common-api 走 BOM 6.0.0，cleanroom 用 6.0.3——迁移期刻意分歧）
-graal = "8456810"                # curse.maven:graal-1504336 文件 id
+graal = "8762962"                # curse.maven:graal-1504336 文件 id = GraalMC 25.1.3.7（自带 TRegex 注册；旧构建 ≤8456812 的 services 只有 js 一行，缺 regex 语言，正则会报 "No language for id regex found"）
 moddev = "2.0.140"
 unifiedPublishing = "0.1.13"
 shadow = "9.4.1"
