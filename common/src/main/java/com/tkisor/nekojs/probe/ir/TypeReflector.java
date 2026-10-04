@@ -669,29 +669,33 @@ public final class TypeReflector {
      */
     public static ApiTypeRef toRef(Type type) {
         if (type == null || type == void.class || type == Void.class) return ApiTypeRef.voidType();
-        if (type instanceof Class<?> cls) return classToRef(cls);
-        if (type instanceof ParameterizedType pt) {
-            Type raw = pt.getRawType();
-            if (raw instanceof Class<?> rawCls) {
-                Type[] args = pt.getActualTypeArguments();
-                List<ApiTypeRef> argRefs = new ArrayList<>(args.length);
-                for (Type arg : args) {
-                    argRefs.add(toRef(arg));
+        return switch (type) {
+            case Class<?> cls -> classToRef(cls);
+            case ParameterizedType pt -> {
+                if (pt.getRawType() instanceof Class<?> rawCls) {
+                    Type[] args = pt.getActualTypeArguments();
+                    List<ApiTypeRef> argRefs = new ArrayList<>(args.length);
+                    for (Type arg : args) {
+                        argRefs.add(toRef(arg));
+                    }
+                    yield ApiTypeRef.symbol(new ApiSymbolId("java", rawCls.getName()), argRefs);
                 }
-                return ApiTypeRef.symbol(new ApiSymbolId("java", rawCls.getName()), argRefs);
+                // raw 不是 Class 的参数化类型（罕见）→ 无信息
+                yield ApiTypeRef.primitive("any");
             }
-            return ApiTypeRef.primitive("any");
-        }
-        if (type instanceof GenericArrayType gat) return ApiTypeRef.array(toRef(gat.getGenericComponentType()));
-        if (type instanceof TypeVariable<?> tv) return ApiTypeRef.typeVariable(tv.getName());
-        if (type instanceof WildcardType wt) {
-            // 通配符按上界渲染。上界恰好是 Object（`?` 与 `? super X`）时无类型信息可取，
-            // 只能落到 any —— 这正是 `Predicate<? super T>` 的形态。
-            Type[] upper = wt.getUpperBounds();
-            if (upper.length > 0 && upper[0] != Object.class) return toRef(upper[0]);
-            return ApiTypeRef.primitive("any");
-        }
-        return ApiTypeRef.primitive("any");
+            case GenericArrayType gat -> ApiTypeRef.array(toRef(gat.getGenericComponentType()));
+            case TypeVariable<?> tv -> ApiTypeRef.typeVariable(tv.getName());
+            case WildcardType wt -> {
+                // 通配符按上界渲染。上界恰好是 Object（`?` 与 `? super X`）时无类型信息可取，
+                // 只能落到 any —— 这正是 `Predicate<? super T>` 的形态。
+                Type[] upper = wt.getUpperBounds();
+                yield upper.length > 0 && upper[0] != Object.class
+                        ? toRef(upper[0])
+                        : ApiTypeRef.primitive("any");
+            }
+            // 其余未知形态无信息可取
+            default -> ApiTypeRef.primitive("any");
+        };
     }
 
     /**
