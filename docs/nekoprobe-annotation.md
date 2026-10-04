@@ -133,7 +133,7 @@ declare module "java:com/tkisor/nekoldlib/signal" {
         returns<Ret extends $RpcBuilder$$$Extra.SType>(this: $RpcBuilder<T, undefined>, ret: Ret): $RpcBuilder<T, Ret>;
         fn(
             this: R extends $RpcBuilder$$$Extra.SType ? $RpcBuilder<T, R> : never,
-            impl: (arg: $RpcBuilder$$$Extra.ArgsOf<T>) => $RpcBuilder$$$Extra.Of<R>,
+            impl: (arg: $RpcBuilder$$$Extra.ArgsOf<T>) => $RpcBuilder$$$Extra.OfReturn<R>,
         ): $RpcCollector$Entry;
     }
 }
@@ -189,6 +189,31 @@ TS2344: Type 'R' does not satisfy the constraint 'SType'.
 > + export type Of<S> = S extends SType ? STypeMap[S] : void;
 > ```
 > 实测改后 `tsc` 退出码 0。副作用是正面的：无返回 RPC 的 `fn` 返回类型成为 `void`，语义正确。
+
+---
+
+## 6.1 `this` 门禁与 `void` 标签
+
+`fn` 可加 `this` 门禁强制调用方先声明返回类型：
+
+```ts
+fn(
+    this: R extends SType ? $RpcBuilder<T, R> : never,
+    impl: (arg: ArgsOf<T>) => OfReturn<R>,
+): $RpcCollector$Entry;
+```
+
+`R` 为 `undefined`（没调 `returns`）时 `this` 是 `never`，调用被拒 —— 这能拦住「忘了声明返回类型」。
+
+**代价**：无返回的 RPC 也必须写一句 `.returns('void')`。因此 `STypeMap` 需要一个 `void` 标签，
+且 Java 侧 `returns("void")` 要**特判**（等同清空返回类型），不能真去 `SignalTypes.byName("void")`。
+
+> **[必须]** 用门禁就必须给 `void` 标签，两者是一套。**没有 `void` 标签的门禁会把无返回
+> 的 RPC 一起拒掉**（实测 `TS2684`），不是"更严格"而是"用不了"。
+
+**已知拦不住的**：`OfReturn<undefined>` 求值为 `void`，而 TS 刻意允许把「返回 `number` 的函数」
+赋给「返回 `void` 的位置」（为让回调可忽略返回值）。所以「无返回时 impl 不该有返回值」
+这条**类型层面拦不住**，只能靠门禁保证"声明过返回类型"。
 
 ---
 
