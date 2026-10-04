@@ -15,7 +15,7 @@ declare module "java:java/net" {
         type(): $Proxy$Type;
     }
 
-    export class $URI implements $Comparable, $Serializable {
+    export class $URI implements $Comparable<$URI>, $Serializable {
         constructor(arg0: string);
         constructor(arg0: string, arg1: string, arg2: string);
         constructor(arg0: string, arg1: string, arg2: string, arg3: number, arg4: string, arg5: string, arg6: string);
