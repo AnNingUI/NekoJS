@@ -376,9 +376,15 @@ public final class IndexFileGenerator {
      */
     public void predeclareClass(String fqn, TypeDecl decl, Set<String> extraImportFqns) {
         registerEnumAlias(fqn, decl);
+        // render 会填充 irRenderer 的 @NekoProbe import 表，故先渲染再取
         declCache.put(fqn, irRenderer.render(decl));
         String packageName = packageOf(fqn);
-        Set<String> imports = new LinkedHashSet<>(collectImportsFromIr(decl, packageName));
+        // @NekoProbe 接管的类：反射 import 收集必然全错（成员已不渲染，扫出来的是死 import；
+        // 而类型层真正引用的外部类型反射又看不见），只用占位符登记的
+        Set<String> probeImports = irRenderer.getNekoProbeImports(fqn);
+        Set<String> imports = probeImports.isEmpty()
+                ? new LinkedHashSet<>(collectImportsFromIr(decl, packageName))
+                : new LinkedHashSet<>(probeImports);
         if (extraImportFqns != null) {
             imports.addAll(extraImportFqns);
         }

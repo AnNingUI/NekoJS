@@ -32,6 +32,13 @@ public final class TypeScriptClassRenderer {
     // 键是 getter 的**属性名**（如 "recipes"），与 ClassDeclGenerator 的 lookup 口径一致
     private final Map<String, Map<String, GetterOverride>> getterOverrides = new LinkedHashMap<>();
 
+    /**
+     * 被 {@code @NekoProbe} 接管的类，其 {@code {{ import(...) }}} 登记的 FQN（FQN → 导入集合）。
+     * 在 {@link #render} 时填充，供 {@code IndexFileGenerator} 并入该类的 import 区——
+     * 接管类的反射 import 收集被跳过，import 只能来自这里。
+     */
+    private final Map<String, Set<String>> nekoProbeImports = new LinkedHashMap<>();
+
     public TypeScriptClassRenderer(TypeAliasRegistry aliases) {
         this.aliases = aliases;
     }
@@ -66,11 +73,90 @@ public final class TypeScriptClassRenderer {
 
     public String render(TypeDecl decl) {
         if (decl.hidden) return "";
+        // @NekoProbe 接管：反射产物完全不渲染，改用注解里的手写声明
+        String overridden = renderAnnotated(decl);
+        if (overridden != null) {
+            return overridden;
+        }
         return switch (decl.kind) {
             case INTERFACE -> renderInterface(decl);
             case ENUM -> renderEnum(decl);
             default -> renderClass(decl);
         };
+    }
+
+    /**
+     * 被 {@code @NekoProbe} 接管时产出手写声明（extra 命名空间 + type 主体）；
+     * 未接管返回 null，由调用方走常规反射渲染。
+     *
+     * <p>缩进：本方法产物与其它声明同层级写进 {@code declare module "..." { ... }}，
+     * 故固定 4 空格前缀（与 {@code renderClass} 一致）；extra 内容再深一级。
+     */
+    private String renderAnnotated(TypeDecl decl) {
+        var annotation = NekoProbePlaceholders.annotationOf(decl.sourceClass);
+        if (annotation == null) {
+            return null;
+        }
+        String classTsName = effectiveClassName(decl);
+        String ns = NekoProbePlaceholders.extraNamespace(classTsName);
+        String owner = decl.fqn + "#NekoProbe";
+
+        // 占位符登记的 FQN 收集起来，供 IndexFileGenerator 并入该类所在模块的 import 区
+        // （接管类的反射 import 收集被跳过，import 只能来自这里——见 @NekoProbe 的 javadoc）
+        Set<String> collected = new LinkedHashSet<>();
+
+        StringBuilder sb = new StringBuilder();
+        if (!annotation.extra().isBlank()) {
+            var extra = NekoProbePlaceholders.substitute(
+                    annotation.extra(), classTsName, ns, fqn -> resolveImportName(fqn, collected), owner + " extra");
+            sb.append("    export namespace ").append(ns).append(" {\n");
+            sb.append(indentBlock(extra.text(), "        "));
+            sb.append("    }\n\n");
+        }
+        var body = NekoProbePlaceholders.substitute(
+                annotation.type(), classTsName, ns, fqn -> resolveImportName(fqn, collected), owner + " type");
+        sb.append(indentBlock(body.text(), "    "));
+
+        nekoProbeImports.put(decl.fqn, collected);
+        return sb.toString();
+    }
+
+    /**
+     * {@code {{ import(fqn) }}} 里的 FQN → 该模块 import 区里的 TS 名，并把 FQN 记进 {@code sink}。
+     *
+     * <p>命名规则镜像 {@code IndexFileGenerator.generate} 发射 import 时的算法：
+     * 取 FQN 最后一个 {@code .} 之后的部分加 {@code $} 前缀。嵌套类 FQN 的最后一段本就含
+     * {@code $}（{@code a.b.RpcCollector$Entry}）→ {@code $RpcCollector$Entry}，与生成结果一致。
+     *
+     * @return 无法解析（无包名）时返回 null，由调用方报错
+     */
+    private static String resolveImportName(String fqn, Set<String> sink) {
+        int dot = fqn.lastIndexOf('.');
+        if (dot < 0) {
+            return null;
+        }
+        sink.add(fqn);
+        return "$" + fqn.substring(dot + 1);
+    }
+
+    /**
+     * 被 {@code @NekoProbe} 接管的类，其 {@code {{ import(...) }}} 登记的 FQN。
+     * 未接管的类返回空集。
+     */
+    public Set<String> getNekoProbeImports(String fqn) {
+        return nekoProbeImports.getOrDefault(fqn, Set.of());
+    }
+
+    /** 多行文本整体缩进；空行不加尾随空格（避免行尾空白）。 */
+    private static String indentBlock(String text, String indent) {
+        StringBuilder sb = new StringBuilder(text.length() + 64);
+        for (String line : text.split("\n", -1)) {
+            if (!line.isBlank()) {
+                sb.append(indent).append(line);
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     private String renderClass(TypeDecl d) {

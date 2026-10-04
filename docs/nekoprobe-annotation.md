@@ -63,7 +63,22 @@ NekoLDLib 实测记录（`JsxTypes.java`）：
 
 ### 3.1 `{{ classtype }}`
 
-展开为**本类的 TS 名**（如 `$RpcBuilder`）。
+展开为**本类的 TS 名**（如 `$RpcBuilder`）——**只是名字，不含 `class`/`interface` 关键字**。
+
+> **[必须]** 声明处自己写关键字：`export class {{ classtype }}<`。
+> 占位符是裸名，写在类型位置（`this: {{ classtype }}`、`{{ classtype }}<T>`）也直接可用，
+> 不能再加关键字。
+
+```java
+type = """
+    export class {{ classtype }}<          // 声明处：自己写 class
+        T extends Record<string, {{ extra.SType }}> = {},
+    > {
+        schema<...>(this: {{ classtype }},  // 类型位置：裸名
+          sch: S): {{ classtype }}<S>;
+    }
+    """
+```
 
 > **[必须]** 不要手写 `$RpcBuilder`——类名可由 `probe.modify_type` 的 `renameClass` 改写，硬编码会与生成结果脱节。
 
