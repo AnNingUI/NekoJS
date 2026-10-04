@@ -6,7 +6,7 @@ import { $Optional, $Set } from "java:java/util";
 import { $Supplier } from "java:java/util/function";
 
 declare module "java:java/lang/module" {
-    export class $ModuleDescriptor implements $Comparable {
+    export class $ModuleDescriptor implements $Comparable<$ModuleDescriptor> {
         get automatic(): boolean;
         isAutomatic(): boolean;
         get open(): boolean;

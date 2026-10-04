@@ -3,7 +3,7 @@ import { $ByteBuffer, $CharBuffer } from "java:java/nio";
 import { $Locale, $Set, $SortedMap } from "java:java/util";
 
 declare module "java:java/nio/charset" {
-    export class $Charset implements $Comparable {
+    export class $Charset implements $Comparable<$Charset> {
         get registered(): boolean;
         isRegistered(): boolean;
         static availableCharsets(): $SortedMap<string, $Charset>;

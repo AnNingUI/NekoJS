@@ -3,7 +3,7 @@ import { $MethodHandle, $MethodHandles$Lookup, $MethodType, $TypeDescriptor$OfFi
 import { $List, $Optional } from "java:java/util";
 
 declare module "java:java/lang/constant" {
-    export interface $ClassDesc extends $ConstantDesc, $TypeDescriptor$OfField {
+    export interface $ClassDesc extends $ConstantDesc, $TypeDescriptor$OfField<$ClassDesc> {
         arrayType(arg0: number): $ClassDesc;
         arrayType(): $ClassDesc;
         componentType(): $ClassDesc;
@@ -86,7 +86,7 @@ declare module "java:java/lang/constant" {
         resolveConstantDesc(arg0: $MethodHandles$Lookup): $MethodHandle;
     }
 
-    export interface $MethodTypeDesc extends $ConstantDesc, $TypeDescriptor$OfMethod {
+    export interface $MethodTypeDesc extends $ConstantDesc, $TypeDescriptor$OfMethod<$ClassDesc, $MethodTypeDesc> {
         changeParameterType(arg0: number, arg1: $ClassDesc): $MethodTypeDesc;
         changeReturnType(arg0: $ClassDesc): $MethodTypeDesc;
         descriptorString(): string;

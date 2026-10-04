@@ -7,7 +7,7 @@ export * as function from "java:java/util/function";
 export * as stream from "java:java/util/stream";
 
 declare module "java:java/util" {
-    export interface $Collection<E> extends $Iterable {
+    export interface $Collection<E> extends $Iterable<E> {
         addAll(arg0: E[]): boolean;
         add(arg0: E): boolean;
         clear(): void;
@@ -100,7 +100,7 @@ declare module "java:java/util" {
         remove(): void;
     }
 
-    export interface $List<E> extends $SequencedCollection {
+    export interface $List<E> extends $SequencedCollection<E> {
         addAll(arg0: number, arg1: E[]): boolean;
         addAll(arg0: E[]): boolean;
         addFirst(arg0: E): void;
@@ -151,7 +151,7 @@ declare module "java:java/util" {
         toArray(): any[];
     }
 
-    export interface $ListIterator<E> extends $Iterator {
+    export interface $ListIterator<E> extends $Iterator<E> {
         add(arg0: E): void;
         hasNext(): boolean;
         hasPrevious(): boolean;
@@ -468,32 +468,32 @@ declare module "java:java/util" {
         toString(): string;
     }
 
-    export interface $PrimitiveIterator<T, T_CONS> extends $Iterator {
+    export interface $PrimitiveIterator<T, T_CONS> extends $Iterator<T> {
         forEachRemaining(arg0: T_CONS): void;
     }
 
-    export interface $PrimitiveIterator$OfDouble extends $PrimitiveIterator {
+    export interface $PrimitiveIterator$OfDouble extends $PrimitiveIterator<number, $DoubleConsumer> {
         forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
         forEachRemaining(arg0: ((arg0: number) => void) | $DoubleConsumer): void;
         nextDouble(): number;
         next(): number;
     }
 
-    export interface $PrimitiveIterator$OfInt extends $PrimitiveIterator {
+    export interface $PrimitiveIterator$OfInt extends $PrimitiveIterator<number, $IntConsumer> {
         forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
         forEachRemaining(arg0: ((arg0: number) => void) | $IntConsumer): void;
         nextInt(): number;
         next(): number;
     }
 
-    export interface $PrimitiveIterator$OfLong extends $PrimitiveIterator {
+    export interface $PrimitiveIterator$OfLong extends $PrimitiveIterator<number, $LongConsumer> {
         forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
         forEachRemaining(arg0: ((arg0: number) => void) | $LongConsumer): void;
         nextLong(): number;
         next(): number;
     }
 
-    export interface $SequencedCollection<E> extends $Collection {
+    export interface $SequencedCollection<E> extends $Collection<E> {
         addFirst(arg0: E): void;
         addLast(arg0: E): void;
         getFirst(): E;
@@ -503,7 +503,7 @@ declare module "java:java/util" {
         reversed(): $SequencedCollection<E>;
     }
 
-    export interface $SequencedMap<K, V> extends $Map {
+    export interface $SequencedMap<K, V> extends $Map<K, V> {
         firstEntry(): $Map$Entry<K, V>;
         lastEntry(): $Map$Entry<K, V>;
         pollFirstEntry(): $Map$Entry<K, V>;
@@ -516,11 +516,11 @@ declare module "java:java/util" {
         sequencedValues(): $SequencedCollection<V>;
     }
 
-    export interface $SequencedSet<E> extends $SequencedCollection, $Set {
+    export interface $SequencedSet<E> extends $SequencedCollection<E>, $Set<E> {
         reversed(): $SequencedSet<E>;
     }
 
-    export interface $Set<E> extends $Collection {
+    export interface $Set<E> extends $Collection<E> {
         addAll(arg0: E[]): boolean;
         add(arg0: E): boolean;
         clear(): void;
@@ -552,7 +552,7 @@ declare module "java:java/util" {
         toArray(): any[];
     }
 
-    export interface $SortedMap<K, V> extends $SequencedMap {
+    export interface $SortedMap<K, V> extends $SequencedMap<K, V> {
         comparator(): $Comparator<any>;
         entrySet(): $Set<$Map$Entry<K, V>>;
         firstKey(): K;
@@ -586,7 +586,7 @@ declare module "java:java/util" {
         static SUBSIZED: number;
     }
 
-    export interface $Spliterator$OfDouble extends $Spliterator$OfPrimitive {
+    export interface $Spliterator$OfDouble extends $Spliterator$OfPrimitive<number, $DoubleConsumer, $Spliterator$OfDouble> {
         forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
         forEachRemaining(arg0: ((arg0: number) => void) | $DoubleConsumer): void;
         tryAdvance(arg0: ((arg0: number) => void) | $Consumer<any>): boolean;
@@ -594,7 +594,7 @@ declare module "java:java/util" {
         trySplit(): $Spliterator$OfDouble;
     }
 
-    export interface $Spliterator$OfInt extends $Spliterator$OfPrimitive {
+    export interface $Spliterator$OfInt extends $Spliterator$OfPrimitive<number, $IntConsumer, $Spliterator$OfInt> {
         forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
         forEachRemaining(arg0: ((arg0: number) => void) | $IntConsumer): void;
         tryAdvance(arg0: ((arg0: number) => void) | $Consumer<any>): boolean;
@@ -602,7 +602,7 @@ declare module "java:java/util" {
         trySplit(): $Spliterator$OfInt;
     }
 
-    export interface $Spliterator$OfLong extends $Spliterator$OfPrimitive {
+    export interface $Spliterator$OfLong extends $Spliterator$OfPrimitive<number, $LongConsumer, $Spliterator$OfLong> {
         forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
         forEachRemaining(arg0: ((arg0: number) => void) | $LongConsumer): void;
         tryAdvance(arg0: ((arg0: number) => void) | $Consumer<any>): boolean;
@@ -610,7 +610,7 @@ declare module "java:java/util" {
         trySplit(): $Spliterator$OfLong;
     }
 
-    export interface $Spliterator$OfPrimitive<T, T_CONS, T_SPLITR extends $Spliterator$OfPrimitive<T, T_CONS, T_SPLITR>> extends $Spliterator {
+    export interface $Spliterator$OfPrimitive<T, T_CONS, T_SPLITR extends $Spliterator$OfPrimitive<T, T_CONS, T_SPLITR>> extends $Spliterator<T> {
         forEachRemaining(arg0: T_CONS): void;
         tryAdvance(arg0: T_CONS): boolean;
         trySplit(): T_SPLITR;

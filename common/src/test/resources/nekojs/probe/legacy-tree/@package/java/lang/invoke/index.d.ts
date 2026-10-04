@@ -89,7 +89,7 @@ declare module "java:java/lang/invoke" {
         unreflect(arg0: $Method): $MethodHandle;
     }
 
-    export class $MethodType implements $Constable, $TypeDescriptor$OfMethod, $Serializable {
+    export class $MethodType implements $Constable, $TypeDescriptor$OfMethod<$Class<any>, $MethodType>, $Serializable {
         static fromMethodDescriptorString(arg0: string, arg1: $ClassLoader): $MethodType;
         static genericMethodType(arg0: number, arg1: boolean): $MethodType;
         static genericMethodType(arg0: number): $MethodType;
@@ -234,7 +234,7 @@ declare module "java:java/lang/invoke" {
         static valueOf(name: string): $VarHandle$AccessMode;
     }
 
-    export class $VarHandle$VarHandleDesc extends $DynamicConstantDesc {
+    export class $VarHandle$VarHandleDesc extends $DynamicConstantDesc<$VarHandle> {
         static ofArray(arg0: $ClassDesc): $VarHandle$VarHandleDesc;
         static ofField(arg0: $ClassDesc, arg1: string, arg2: $ClassDesc): $VarHandle$VarHandleDesc;
         static ofStaticField(arg0: $ClassDesc, arg1: string, arg2: $ClassDesc): $VarHandle$VarHandleDesc;

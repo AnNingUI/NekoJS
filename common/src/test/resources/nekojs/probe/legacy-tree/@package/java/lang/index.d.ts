@@ -95,7 +95,7 @@ declare module "java:java/lang" {
         toString(): string;
     }
 
-    export class $Character implements $Serializable, $Comparable, $Constable {
+    export class $Character implements $Serializable, $Comparable<$Character>, $Constable {
         constructor(arg0: string);
         static BYTES: number;
         static COMBINING_SPACING_MARK: number;
@@ -264,7 +264,7 @@ declare module "java:java/lang" {
         toString(): string;
     }
 
-    export class $Class<T> implements $Serializable, $GenericDeclaration, $Type, $AnnotatedElement, $TypeDescriptor$OfField, $Constable {
+    export class $Class<T> implements $Serializable, $GenericDeclaration, $Type, $AnnotatedElement, $TypeDescriptor$OfField<$Class<any>>, $Constable {
         get annotatedInterfaces(): $AnnotatedType[];
         getAnnotatedInterfaces(): $AnnotatedType[];
         get annotatedSuperclass(): $AnnotatedType;
@@ -433,7 +433,7 @@ declare module "java:java/lang" {
         compareTo(arg0: T): number;
     }
 
-    export class $Double implements $Comparable, $Constable, $ConstantDesc {
+    export class $Double implements $Comparable<number>, $Constable, $ConstantDesc {
         constructor(arg0: number);
         constructor(arg0: string);
         static BYTES: number;
@@ -482,7 +482,7 @@ declare module "java:java/lang" {
         toString(): string;
     }
 
-    export class $Enum<E extends $Enum<E>> implements $Constable, $Comparable, $Serializable {
+    export class $Enum<E extends $Enum<E>> implements $Constable, $Comparable<E>, $Serializable {
         get declaringClass(): $Class<E>;
         getDeclaringClass(): $Class<E>;
         static valueOf<T>(arg0: $Class<T>, arg1: string): T;
@@ -495,13 +495,13 @@ declare module "java:java/lang" {
         toString(): string;
     }
 
-    export class $Enum$EnumDesc<E extends $Enum<E>> extends $DynamicConstantDesc {
+    export class $Enum$EnumDesc<E extends $Enum<E>> extends $DynamicConstantDesc<E> {
         static of<E>(arg0: $ClassDesc, arg1: string): $Enum$EnumDesc<E>;
         resolveConstantDesc(arg0: $MethodHandles$Lookup): E;
         toString(): string;
     }
 
-    export class $Integer implements $Comparable, $Constable, $ConstantDesc {
+    export class $Integer implements $Comparable<number>, $Constable, $ConstantDesc {
         constructor(arg0: number);
         constructor(arg0: string);
         static BYTES: number;
@@ -570,7 +570,7 @@ declare module "java:java/lang" {
         spliterator(): $Spliterator<T>;
     }
 
-    export class $Long implements $Comparable, $Constable, $ConstantDesc {
+    export class $Long implements $Comparable<number>, $Constable, $ConstantDesc {
         constructor(arg0: string);
         constructor(arg0: number);
         static BYTES: number;
@@ -738,7 +738,7 @@ declare module "java:java/lang" {
         run(): void;
     }
 
-    export class $String implements $Serializable, $Comparable, $CharSequence, $Constable, $ConstantDesc {
+    export class $String implements $Serializable, $Comparable<string>, $CharSequence, $Constable, $ConstantDesc {
         constructor();
         constructor(arg0: number[]);
         constructor(arg0: number[], arg1: number);
@@ -845,7 +845,7 @@ declare module "java:java/lang" {
         trim(): string;
     }
 
-    export class $StringBuffer extends $AbstractStringBuilder implements $Appendable, $Serializable, $Comparable, $CharSequence {
+    export class $StringBuffer extends $AbstractStringBuilder implements $Appendable, $Serializable, $Comparable<$StringBuffer>, $CharSequence {
         constructor();
         constructor(arg0: number);
         constructor(arg0: $CharSequence);
@@ -904,7 +904,7 @@ declare module "java:java/lang" {
         trimToSize(): void;
     }
 
-    export class $StringBuilder extends $AbstractStringBuilder implements $Appendable, $Serializable, $Comparable, $CharSequence {
+    export class $StringBuilder extends $AbstractStringBuilder implements $Appendable, $Serializable, $Comparable<$StringBuilder>, $CharSequence {
         constructor();
         constructor(arg0: number);
         constructor(arg0: $CharSequence);

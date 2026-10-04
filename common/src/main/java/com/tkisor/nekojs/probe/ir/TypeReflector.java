@@ -52,15 +52,21 @@ public final class TypeReflector {
 
         // 父类（仅 class；interface/enum 的 extends 在旧实现里不渲染 superclass）
         if (kind == TypeDecl.Kind.CLASS) {
-            Class<?> sc = cls.getSuperclass();
-            if (sc != null && sc != Object.class) {
-                decl.superType = TypeSlot.of(sc, toRef(sc));
+            Type sc = cls.getGenericSuperclass();
+            Class<?> scRaw = rawClassOf(sc);
+            if (scRaw != null && scRaw != Object.class) {
+                decl.superType = TypeSlot.of(scRaw, toRef(sc));
             }
         }
 
-        // 接口
-        for (Class<?> iface : cls.getInterfaces()) {
-            decl.interfaces.add(TypeSlot.of(iface, toRef(iface)));
+        // 接口：用 getGenericInterfaces 才能带上实参（$Collection<E> extends $Iterable<E>）。
+        // getInterfaces 只给裸 Class，实参丢失后父接口的类型变量退化成 any，
+        // 子接口就继承不到 E（forEach 的 x 变成 any）。
+        for (Type iface : cls.getGenericInterfaces()) {
+            Class<?> ifaceRaw = rawClassOf(iface);
+            if (ifaceRaw != null) {
+                decl.interfaces.add(TypeSlot.of(ifaceRaw, toRef(iface)));
+            }
         }
 
         switch (kind) {

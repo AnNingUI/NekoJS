@@ -35,7 +35,7 @@ declare module "java:java/util/stream" {
         static valueOf(name: string): $Collector$Characteristics;
     }
 
-    export interface $DoubleStream extends $BaseStream {
+    export interface $DoubleStream extends $BaseStream<number, $DoubleStream> {
         allMatch(arg0: ((arg0: number) => boolean) | $DoublePredicate): boolean;
         anyMatch(arg0: ((arg0: number) => boolean) | $DoublePredicate): boolean;
         average(): $OptionalDouble;
@@ -92,7 +92,7 @@ declare module "java:java/util/stream" {
         accept(arg0: number, arg1: ((arg0: number) => void) | $DoubleConsumer): void;
     }
 
-    export interface $IntStream extends $BaseStream {
+    export interface $IntStream extends $BaseStream<number, $IntStream> {
         allMatch(arg0: ((arg0: number) => boolean) | $IntPredicate): boolean;
         anyMatch(arg0: ((arg0: number) => boolean) | $IntPredicate): boolean;
         asDoubleStream(): $DoubleStream;
@@ -153,7 +153,7 @@ declare module "java:java/util/stream" {
         accept(arg0: number, arg1: ((arg0: number) => void) | $IntConsumer): void;
     }
 
-    export interface $LongStream extends $BaseStream {
+    export interface $LongStream extends $BaseStream<number, $LongStream> {
         allMatch(arg0: ((arg0: number) => boolean) | $LongPredicate): boolean;
         anyMatch(arg0: ((arg0: number) => boolean) | $LongPredicate): boolean;
         asDoubleStream(): $DoubleStream;
@@ -213,7 +213,7 @@ declare module "java:java/util/stream" {
         accept(arg0: number, arg1: ((arg0: number) => void) | $LongConsumer): void;
     }
 
-    export interface $Stream<T> extends $BaseStream {
+    export interface $Stream<T> extends $BaseStream<T, $Stream<T>> {
         allMatch(arg0: ((arg0: T) => boolean) | $Predicate<any>): boolean;
         anyMatch(arg0: ((arg0: T) => boolean) | $Predicate<any>): boolean;
         builder<T>(): $Stream$Builder<T>;
@@ -264,7 +264,7 @@ declare module "java:java/util/stream" {
         toList(): $List<T>;
     }
 
-    export interface $Stream$Builder<T> extends $Consumer {
+    export interface $Stream$Builder<T> extends $Consumer<T> {
         accept(arg0: T): void;
         add(arg0: T): $Stream$Builder<T>;
         build(): $Stream<T>;
