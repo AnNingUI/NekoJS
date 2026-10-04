@@ -75,6 +75,9 @@ public final class TypeReflector {
             case ENUM -> reflectEnumMembers(cls, decl);
         }
 
+        // 补齐全被继承成员的重载（见 flattenShadowedOverloads）
+        flattenShadowedOverloads(cls, decl);
+
         // 整个类型建好后统一清理：埋名/编辑过 `probe.assign_type` 的类可能残留不可达的类型变量，
         // 这一步在能看到完整型参作用域的位置兜底（见 dropUnreachableTypeVars）。
         dropUnreachableTypeVars(decl);
@@ -162,7 +165,7 @@ public final class TypeReflector {
     /**
      * 解析类型对应的**原始**类；泛型/通配符等非 Class 形态不可能是函数式接口，返回 null。
      *
-     * <p>这里交出原始类即可，参数化实参由 {@link #fillUnboundWithParameterVars} 另行绑定——
+     * <p>这里交出原始类即可，参数化实参由 {@link #applySignatureSubstitution} 另行绑定——
      * 只靠 {@code Class} 无法还原 {@code Predicate<String>} 的实参。
      */
     @Nullable
@@ -179,7 +182,7 @@ public final class TypeReflector {
      * <ul>
      *   <li>属于**函数式接口自身**的（{@code Predicate<T>} 的 {@code T}）——在参数位置上
      *       它的实参由声明处所在作用域决定，通配符上界又会把它抹成 any。这类位置统一按
-     *       {@link #fillUnboundWithParameterVars} 回填成接口自己的形参名；</li>
+     *       {@link #applySignatureSubstitution} 回填成接口自己的形参名；</li>
      *   <li>**方法自己声明的**（{@code Function.andThen<V>} 的 {@code V}）——由调用方在调用点
      *       推断，原样保留。这里不做任何替换：替换成外层实参反而是错的。</li>
      * </ul>
@@ -190,22 +193,33 @@ public final class TypeReflector {
         boolean varArgs = sam.isVarArgs();
         for (int i = 0; i < genericParams.length; i++) {
             boolean isVarargs = varArgs && i == genericParams.length - 1;
-            Type paramType = genericParams[i];
-            // 变参取组件类型并置 varargs，渲染时补回 `...args: T[]`（与 reflectParamsInto 一致）。
-            // 两种数组形态都要处理：泛型数组是 GenericArrayType，而 `Object...` 反射给的是 Class。
-            if (isVarargs) {
-                if (paramType instanceof GenericArrayType gat) {
-                    paramType = gat.getGenericComponentType();
-                } else if (paramType instanceof Class<?> pc && pc.isArray()) {
-                    paramType = pc.getComponentType();
-                }
-            }
-            params.add(new ApiParameter("arg" + i, toRef(paramType), false, isVarargs));
+            params.add(new ApiParameter("arg" + i,
+                    toRef(varargsComponent(genericParams[i], isVarargs)), false, isVarargs));
         }
         ApiTypeRef ret = sam.getReturnType() == void.class
                 ? ApiTypeRef.voidType()
                 : toRef(sam.getGenericReturnType());
         return new ApiSignature(params, ret, false);
+    }
+
+    /**
+     * 变参参数的**组件类型**；非变参原样返回。
+     *
+     * <p>反射给的是数组形态（{@code ClassDesc[]}），而 IR 约定变参存组件类型 + {@code varargs} 标志，
+     * 渲染时再补回 {@code ...args: T[]}。两种数组形态都要处理：泛型数组是 {@link GenericArrayType}，
+     * 而 {@code Object...} 反射给的是 {@code Class}。
+     */
+    private static Type varargsComponent(Type type, boolean isVarargs) {
+        if (!isVarargs) {
+            return type;
+        }
+        if (type instanceof GenericArrayType gat) {
+            return gat.getGenericComponentType();
+        }
+        if (type instanceof Class<?> pc && pc.isArray()) {
+            return pc.getComponentType();
+        }
+        return type;
     }
 
     /** 原始类的类型形参名集合（用于区分"接口自身"与"方法自身"的类型变量）。 */
@@ -246,6 +260,160 @@ public final class TypeReflector {
             found = m;
         }
         return found;
+    }
+
+    /**
+     * 补齐**被自身重声明遮蔽掉的继承重载**。
+     *
+     * <p>Java 允许子接口只重声明父接口的一部分重载（{@code Set} 只重声明了
+     * {@code toArray()} 与 {@code toArray(T[])}，没重声明 {@code toArray(IntFunction)}）。
+     * 渲染成 TS 后，子接口的同名成员只剩自己那几条。这对**单向继承**无害
+     * （TS 用可赋值性检查），但一旦某个接口**同时继承**两个同名成员条数不同的父接口，
+     * TS 就要求两边 identical，直接报 TS2320：
+     * <pre>
+     *   interface $SequencedSet&lt;E&gt; extends $SequencedCollection&lt;E&gt;, $Set&lt;E&gt;
+     *   → Named property 'toArray' of types ... are not identical.
+     * </pre>
+     *
+     * <p>这里把父接口有、自己缺的那些签名补进自己，使重声明后的集合与父接口一致。
+     * 补的是**父接口的签名**（经泛型实参改写，如 {@code Collection<E>} 用在 {@code $Set<E>}
+     * 下仍是 {@code E}），不是并集之外的新东西——所以子接口能力不变，只是不再遮蔽。
+     */
+    private void flattenShadowedOverloads(Class<?> cls, TypeDecl decl) {
+        for (TypeSlot slot : decl.interfaces) {
+            Class<?> parent = rawClassOf(slot.sourceType);
+            if (parent == null || parent == cls) {
+                continue;
+            }
+            Map<String, ApiTypeRef> remap = supertypeArgumentMap(cls, parent);
+            for (MethodDecl inherited : parentInstanceMethods(parent)) {
+                // 只处理**被自身重声明遮蔽掉**的名字：没重声明的整个靠继承，不必补
+                if (decl.methods.stream().noneMatch(m -> !m.hidden && m.name.equals(inherited.name))) {
+                    continue;
+                }
+                MethodDecl rebound = rebindMethod(inherited, remap);
+                // 该签名若已能从自身或更远的父链拿到（如 $PrimitiveIterator$OfDouble 的直接父
+                // $PrimitiveIterator 已被补齐过），就不必再补——否则会逐层重复。
+                if (inheritedFromAnySupertype(cls, rebound)) {
+                    continue;
+                }
+                decl.methods.add(rebound);
+            }
+        }
+    }
+
+    /**
+     * 该签名是否已能从 {@code cls} 的**任意**父类型拿到（含自身声明的）。
+     *
+     * <p>父类自身的声明也要查：{@code Integer extends Number implements Comparable<Integer>}
+     * 里 {@code compareTo(Integer)} 属 {@code Comparable}，但 {@code Integer} 自己声明了它——
+     * 只查接口会把已经有的那条又补一遍（{@code extends} 与 {@code implements} 两条路径各补一次）。
+     *
+     * <p>只按参数列表比对，不比返回类型——协变覆盖允许同参不同返回。
+     */
+    private static boolean inheritedFromAnySupertype(Class<?> cls, MethodDecl candidate) {
+        for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
+            for (var method : c.getDeclaredMethods()) {
+                if (!Modifier.isPublic(method.getModifiers()) || Modifier.isStatic(method.getModifiers())) continue;
+                if (method.getName().equals(candidate.name)
+                        && method.getParameterCount() == candidate.params.size()
+                        && declaresMatching(c, candidate, new HashSet<>())) {
+                    return true;
+                }
+            }
+            for (Class<?> iface : c.getInterfaces()) {
+                if (declaresMatching(iface, candidate, new HashSet<>())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** 接口自身声明的公开实例方法（跳过 static/bridge/synthetic，与 reflectInterfaceMembers 同口径）。 */
+    private static List<MethodDecl> parentInstanceMethods(Class<?> iface) {
+        List<MethodDecl> out = new ArrayList<>();
+        var reflector = new TypeReflector();
+        for (var method : iface.getDeclaredMethods()) {
+            if (!Modifier.isPublic(method.getModifiers())) continue;
+            if (Modifier.isStatic(method.getModifiers())) continue;
+            if (method.isSynthetic() || method.isBridge()) continue;
+            out.add(reflector.reflectMethod(method));
+        }
+        return out;
+    }
+
+    /**
+     * 求「{@code parent} 的形参名 → {@code cls} 作用域下的类型引用」
+     * （如 {@code Collection<E>} 用在 {@code Set<E>} 上时 {@code E → E}）。
+     */
+    private static Map<String, ApiTypeRef> supertypeArgumentMap(Class<?> cls, Class<?> parent) {
+        Map<String, ApiTypeRef> bindings = searchSupertype(cls, parent, rootSubstitution(cls), new HashSet<>());
+        return bindings == null ? Map.of() : bindings;
+    }
+
+    /** 把方法签名里的类型变量按映射改写（父接口形参名 → 本接口作用域下的引用）。 */
+    private static MethodDecl rebindMethod(MethodDecl src, Map<String, ApiTypeRef> remap) {
+        MethodDecl out = new MethodDecl(src.name);
+        out.isStatic = src.isStatic;
+        out.isGetter = src.isGetter;
+        out.isSetter = src.isSetter;
+        out.renameTo = src.renameTo;
+        out.typeParams.addAll(src.typeParams);
+        for (MethodDecl.MethodParam p : src.params) {
+            ApiTypeRef type = p.type == null ? null : substituteTypeVariables(p.type.ref, remap);
+            out.params.add(new MethodDecl.MethodParam(p.name, TypeSlot.of(p.type == null ? null : p.type.sourceType, type), p.varargs));
+        }
+        if (src.returnType != null) {
+            out.returnType = TypeSlot.of(src.returnType.sourceType,
+                    substituteTypeVariables(src.returnType.ref, remap));
+        }
+        return out;
+    }
+
+    /**
+     * 该接口（沿其父链）是否声明了与 {@code candidate} 同参数列表的方法。
+     *
+     * <p>**只比参数列表，不比返回类型**：Java 允许协变覆盖（{@code Spec.value(): Object} 被
+     * {@code ConcreteSpec.value(): String} 覆盖），两者参数相同、返回不同，属同一条重载。
+     * 把返回类型算进去会把这种覆盖误判成"缺失的重载"补进来，产出同参不同返回的非法重载
+     * （正是 bridge 过滤要避免的）。
+     *
+     * <p>反射参数的**变参要拆成组件类型**再比：IR 里变参被扁平化为组件类型（{@code ClassDesc...}
+     * → 类型 {@code ClassDesc} + {@code varargs}），而 {@code getGenericParameterTypes()} 给的是
+     * {@code ClassDesc[]}。不拆就会把同一条重载判成不同（{@code MethodTypeDesc} 自己声明的
+     * {@code insertParameterTypes} 会被再补一遍）。
+     */
+    private static boolean declaresMatching(Class<?> iface, MethodDecl candidate, Set<String> visited) {
+        if (!visited.add(iface.getName())) {
+            return false;
+        }
+        for (var method : iface.getDeclaredMethods()) {
+            if (!Modifier.isPublic(method.getModifiers()) || Modifier.isStatic(method.getModifiers())) continue;
+            if (method.getParameterCount() != candidate.params.size()) continue;
+            if (!method.getName().equals(candidate.name)) continue;
+            boolean same = true;
+            boolean varArgs = method.isVarArgs();
+            Type[] types = method.getGenericParameterTypes();
+            for (int i = 0; i < types.length && same; i++) {
+                boolean isVarargs = varArgs && i == types.length - 1;
+                same = toRef(varargsComponent(types[i], isVarargs)).compatibilityKey()
+                        .equals(typeRefKey(candidate.params.get(i).type));
+            }
+            if (same) {
+                return true;
+            }
+        }
+        for (Class<?> parent : iface.getInterfaces()) {
+            if (declaresMatching(parent, candidate, visited)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String typeRefKey(TypeSlot slot) {
+        return slot == null || slot.ref == null ? "" : slot.ref.compatibilityKey();
     }
 
     private void reflectClassMembers(Class<?> cls, TypeDecl decl) {
@@ -633,7 +801,7 @@ public final class TypeReflector {
         if (raw == null) {
             return Map.of();
         }
-        return searchSupertype(declared, raw, samOwner, rootSubstitution(declared), new HashSet<>());
+        return searchSupertype(raw, samOwner, rootSubstitution(declared), new HashSet<>());
     }
 
     /** {@code declared} 的实参列表，按 raw 的形参名建表；非参数化类型返回空表。 */
@@ -652,7 +820,7 @@ public final class TypeReflector {
 
     /** 深度优先找 {@code target}；找到时返回它那一层的形参绑定表。 */
     @Nullable
-    private static Map<String, ApiTypeRef> searchSupertype(Type type, Class<?> raw, Class<?> target,
+    private static Map<String, ApiTypeRef> searchSupertype(Class<?> raw, Class<?> target,
                                                           Map<String, ApiTypeRef> subst, Set<String> visited) {
         if (raw == target) {
             return subst;
@@ -671,7 +839,7 @@ public final class TypeReflector {
                 continue;
             }
             Map<String, ApiTypeRef> next = parentSubstitution(parent, parentRaw, subst);
-            Map<String, ApiTypeRef> found = searchSupertype(parent, parentRaw, target, next, visited);
+            Map<String, ApiTypeRef> found = searchSupertype(parentRaw, target, next, visited);
             if (found != null) {
                 return found;
             }
@@ -807,30 +975,16 @@ public final class TypeReflector {
     /**
      * 实参位置上真正能交给函数式接口的东西。
      *
-     * <p>通配符取**下界**（{@code ? super E} → {@code E}）：{@code Predicate<? super E>} 的参数
-     * 位置接受任何能消费 {@code E} 的谓词，脚本写 lambda 时按 {@code E} 写才与调用方一致。
-     *
-     * <p>下界/上界都取不到有用信息时（{@code ? super T} 的下界 T 其上界是 {@code Object}、
-     * 无界 {@code ?}）返回 null，**不做替换**：这种情况下反射已经还原不出实参，
-     * 而接口形参名未必在调用处可达——{@code Iterable.forEach(Consumer<? super T>)} 的 T
-     * 属于 Iterable、{@code BiConsumer.andThen(BiConsumer<? super T, ? super U>)} 的 T/U
-     * 属于 BiConsumer，把它们塞进回调体里会凭空造出未绑定的名字（编辑器整行标红）。
-     * 保留现状并交给 {@link #dropUnreachableTypeVars} 兜底，比猜一个名字安全。
-     *
-     * <p>实参类型是数组时按**组件类型**处理：接在接口形参上的数组对应
-     * {@code interface X<T> { accept(T) }} 的用法（如 {@code Consumer<String[]>} 对应
-     * {@code accept(String[])}），而 rest 渲染会在组件类型后补 {@code []}。
-     */
-    /**
-     * 实参位置上真正能交给函数式接口的东西。
-     *
      * <p>通配符取**下界**（{@code ? super X} → {@code X}）：{@code Predicate<? super E>} 的参数
      * 位置接受任何能消费 {@code E} 的谓词，脚本写 lambda 时按 {@code E} 写才与调用方一致，
      * 也与同声明里 {@code test(arg0: E)} 的写法对得上。X 本身是类型变量时同样照取——
      * 在 {@code $Collection<E>} 里它就是 {@code E}。
      *
      * <p>{@code ? extends X} 取不到下界，退回上界 X；无界 {@code ?} 两边都没有信息，返回 null
-     * 表示**不做替换**（反射已还原不出实参，猜一个名字不如留给后续 {@code any} 兜底）。
+     * 表示**不做替换**：此时反射已还原不出实参（{@code Iterable.forEach(Consumer<? super T>)}
+     * 的 T 属于 Iterable、{@code BiConsumer.andThen(BiConsumer<? super T, ? super U>)} 的 T/U
+     * 属于 BiConsumer），而接口形参名未必在调用处可达，猜一个名字不如交给
+     * {@link #dropUnreachableTypeVars} 兜底。
      *
      * <p>实参类型是数组时按**组件类型**处理：接在接口形参上的数组对应
      * {@code interface X<T> { accept(T) }} 的用法（如 {@code Consumer<String[]>} 对应
@@ -856,7 +1010,7 @@ public final class TypeReflector {
     @Nullable
     private static ApiTypeRef arrayElement(@Nullable ApiTypeRef ref) {
         if (ref != null && ref.kind() == ApiTypeRef.Kind.ARRAY && !ref.arguments().isEmpty()) {
-            return ref.arguments().get(0);
+            return ref.arguments().getFirst();
         }
         return ref;
     }
@@ -908,7 +1062,7 @@ public final class TypeReflector {
         return switch (ref.kind()) {
             case SYMBOL -> ApiTypeRef.symbol(ApiSymbolId.parse(ref.name()), replaced);
             case UNION -> ApiTypeRef.union(replaced);
-            case ARRAY -> ApiTypeRef.array(replaced.get(0));
+            case ARRAY -> ApiTypeRef.array(replaced.getFirst());
             default -> ref;
         };
     }
