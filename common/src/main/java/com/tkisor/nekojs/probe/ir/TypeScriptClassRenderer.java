@@ -147,16 +147,35 @@ public final class TypeScriptClassRenderer {
         return nekoProbeImports.getOrDefault(fqn, Set.of());
     }
 
-    /** 多行文本整体缩进；空行不加尾随空格（避免行尾空白）。 */
+    /**
+     * 多行文本整体缩进；空行不加尾随空格（避免行尾空白）。
+     *
+     * <p>首尾空行被剥掉：注解用 Java text block（{@code """}）书写，开头/结尾各带一个
+     * 换行是常态，留着会在产物里留下无意义的空白行。
+     */
     private static String indentBlock(String text, String indent) {
-        StringBuilder sb = new StringBuilder(text.length() + 64);
-        for (String line : text.split("\n", -1)) {
+        String body = stripBlankEdges(text);
+        if (body.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(body.length() + 64);
+        for (String line : body.split("\n", -1)) {
             if (!line.isBlank()) {
                 sb.append(indent).append(line);
             }
             sb.append("\n");
         }
         return sb.toString();
+    }
+
+    /** 剥掉首尾的空白行，保留中间的空行（作者可能有意用它分段）。 */
+    private static String stripBlankEdges(String text) {
+        String[] lines = text.split("\n", -1);
+        int from = 0;
+        int to = lines.length;
+        while (from < to && lines[from].isBlank()) from++;
+        while (to > from && lines[to - 1].isBlank()) to--;
+        return String.join("\n", java.util.Arrays.copyOfRange(lines, from, to));
     }
 
     private String renderClass(TypeDecl d) {

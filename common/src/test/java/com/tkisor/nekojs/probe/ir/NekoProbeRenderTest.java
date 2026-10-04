@@ -64,6 +64,18 @@ class NekoProbeRenderTest {
     public static final class Broken {
     }
 
+    /** 中间含空行：作者用它分段，应保留（只剥首尾）。 */
+    @NekoProbe(type = """
+            export class {{ classtype }} {
+
+                a(): void;
+
+                b(): void;
+            }
+            """)
+    public static final class InteriorBlankLines {
+    }
+
     private static String render(Class<?> cls) {
         return new TypeScriptClassRenderer(new TypeAliasRegistry()).render(new TypeReflector().reflect(cls));
     }
@@ -72,6 +84,41 @@ class NekoProbeRenderTest {
         var r = new TypeScriptClassRenderer(new TypeAliasRegistry());
         out.append(r.render(new TypeReflector().reflect(cls)));
         return r;
+    }
+
+    /**
+     * 把所有夹具的渲染产物写一份到 {@code build/neko-probe-actual/}，便于人工检查与贴 issue。
+     *
+     * <p>写的是**未经断言**的原始产物，包含完整上下文（未注解类的反射产物可作对照）。
+     * 只写 build/ 目录，不碰源码树；不设断言，因此产物有问题时本用例仍会通过，
+     * 真正的问题由其它用例的断言暴露。
+     */
+    @Test
+    void dumpActualOutputForInspection() throws java.io.IOException {
+        var dir = java.nio.file.Path.of("build", "neko-probe-actual");
+        java.nio.file.Files.createDirectories(dir);
+
+        record Sample(String name, Class<?> cls, String note) { }
+        var samples = java.util.List.of(
+                new Sample("annotated-builder", AnnotatedBuilder.class, "extra + type，含三种占位符"),
+                new Sample("type-only", TypeOnly.class, "只有 type，无 extra"),
+                new Sample("with-import", WithImport.class, "{{ import(java.util.List) }} 跨包引用"),
+                new Sample("not-annotated", NotAnnotated.class, "未注解 → 走反射，可作对照"));
+
+        var summary = new StringBuilder();
+        summary.append("本目录由 NekoProbeRenderTest#dumpActualOutputForInspection 生成，仅供人工检查。\n")
+                .append("注意：这些是 render() 的原始产物（模块体层级，4 空格缩进），\n")
+                .append("外层还会被 IndexFileGenerator 包进 declare module \"...\" { }。\n\n");
+
+        for (var s : samples) {
+            String out = render(s.cls());
+            java.nio.file.Files.writeString(dir.resolve(s.name() + ".d.ts"), out,
+                    java.nio.charset.StandardCharsets.UTF_8);
+            summary.append("=== ").append(s.name()).append(".d.ts —— ").append(s.note()).append(" ===\n")
+                    .append(out).append("\n");
+        }
+        java.nio.file.Files.writeString(dir.resolve("README.txt"), summary.toString(),
+                java.nio.charset.StandardCharsets.UTF_8);
     }
 
     // ---------------- 接管行为 ----------------
@@ -182,5 +229,20 @@ class NekoProbeRenderTest {
 
         assertTrue(out.contains("    export namespace $NekoProbeRenderTest$AnnotatedBuilder$$$Extra {\n"), out);
         assertTrue(out.contains("        export type SType"), "extra 内容应深一级:\n" + out);
+    }
+
+    @Test
+    void blankEdgesFromTextBlocksAreStripped() {
+        // 注解用 Java text block 书写，首尾各带一个换行是常态，不该在产物里留空白行
+        String out = render(AnnotatedBuilder.class);
+        assertFalse(out.contains("\n\n\n"), "不应出现连续空行:\n" + out);
+        assertFalse(out.contains("\n\n    }"), "命名空间闭合前不应有空行:\n" + out);
+    }
+
+    @Test
+    void interiorBlankLinesArePreserved() {
+        String out = render(InteriorBlankLines.class);
+        // 作者用空行分段是有意的，只剥首尾
+        assertTrue(out.contains("a(): void;\n\n        b(): void;"), "中间空行应保留:\n" + out);
     }
 }
