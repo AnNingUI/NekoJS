@@ -23,3 +23,6 @@ bb26/
 /.pnpm-store/
 /.dsh-tmp/
 ProbeJS-1.21/
+/.omc/
+# Claude Code 会话记录导出（
+conversation-*.txt

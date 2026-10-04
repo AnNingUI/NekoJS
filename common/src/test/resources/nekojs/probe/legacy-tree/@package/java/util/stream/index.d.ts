@@ -7,7 +7,7 @@ declare module "java:java/util/stream" {
         close(): void;
         isParallel(): boolean;
         iterator(): $Iterator<T>;
-        onClose(arg0: $Runnable): S;
+        onClose(arg0: (() => void) | $Runnable): S;
         parallel(): S;
         sequential(): S;
         spliterator(): $Spliterator<T>;
@@ -19,8 +19,8 @@ declare module "java:java/util/stream" {
         characteristics(): $Set<$Collector$Characteristics>;
         combiner(): $BinaryOperator<A>;
         finisher(): $Function<A, R>;
-        of<T, A, R>(arg0: $Supplier<A>, arg1: $BiConsumer<A, T>, arg2: $BinaryOperator<A>, arg3: $Function<A, R>, arg4?: $Collector$Characteristics_[]): $Collector<T, A, R>;
-        of<T, R>(arg0: $Supplier<R>, arg1: $BiConsumer<R, T>, arg2: $BinaryOperator<R>, arg3?: $Collector$Characteristics_[]): $Collector<T, R, R>;
+        of<T, A, R>(arg0: (() => A) | $Supplier<A>, arg1: ((arg0: A, arg1: T) => void) | $BiConsumer<A, T>, arg2: ((arg0: A, arg1: A) => A) | $BinaryOperator<A>, arg3: ((arg0: A) => R) | $Function<A, R>, ...arg4: $Collector$Characteristics_[]): $Collector<T, A, R>;
+        of<T, R>(arg0: (() => R) | $Supplier<R>, arg1: ((arg0: R, arg1: T) => void) | $BiConsumer<R, T>, arg2: ((arg0: R, arg1: R) => R) | $BinaryOperator<R>, ...arg3: $Collector$Characteristics_[]): $Collector<T, R, R>;
         supplier(): $Supplier<A>;
     }
 
@@ -36,49 +36,49 @@ declare module "java:java/util/stream" {
     }
 
     export interface $DoubleStream extends $BaseStream {
-        allMatch(arg0: $DoublePredicate): boolean;
-        anyMatch(arg0: $DoublePredicate): boolean;
+        allMatch(arg0: ((arg0: number) => boolean) | $DoublePredicate): boolean;
+        anyMatch(arg0: ((arg0: number) => boolean) | $DoublePredicate): boolean;
         average(): $OptionalDouble;
         boxed(): $Stream<number>;
         builder(): $DoubleStream$Builder;
-        collect<R>(arg0: $Supplier<R>, arg1: $ObjDoubleConsumer<R>, arg2: $BiConsumer<R, R>): R;
+        collect<R>(arg0: (() => R) | $Supplier<R>, arg1: ((arg0: R, arg1: number) => void) | $ObjDoubleConsumer<R>, arg2: ((arg0: R, arg1: R) => void) | $BiConsumer<R, R>): R;
         concat(arg0: $DoubleStream, arg1: $DoubleStream): $DoubleStream;
         count(): number;
         distinct(): $DoubleStream;
-        dropWhile(arg0: $DoublePredicate): $DoubleStream;
+        dropWhile(arg0: ((arg0: number) => boolean) | $DoublePredicate): $DoubleStream;
         empty(): $DoubleStream;
-        filter(arg0: $DoublePredicate): $DoubleStream;
+        filter(arg0: ((arg0: number) => boolean) | $DoublePredicate): $DoubleStream;
         findAny(): $OptionalDouble;
         findFirst(): $OptionalDouble;
-        flatMap(arg0: $DoubleFunction<$DoubleStream>): $DoubleStream;
-        forEachOrdered(arg0: $DoubleConsumer): void;
-        forEach(arg0: $DoubleConsumer): void;
-        generate(arg0: $DoubleSupplier): $DoubleStream;
-        iterate(arg0: number, arg1: $DoublePredicate, arg2: $DoubleUnaryOperator): $DoubleStream;
-        iterate(arg0: number, arg1: $DoubleUnaryOperator): $DoubleStream;
+        flatMap(arg0: ((arg0: number) => $DoubleStream) | $DoubleFunction<$DoubleStream>): $DoubleStream;
+        forEachOrdered(arg0: ((arg0: number) => void) | $DoubleConsumer): void;
+        forEach(arg0: ((arg0: number) => void) | $DoubleConsumer): void;
+        generate(arg0: (() => number) | $DoubleSupplier): $DoubleStream;
+        iterate(arg0: number, arg1: ((arg0: number) => boolean) | $DoublePredicate, arg2: ((arg0: number) => number) | $DoubleUnaryOperator): $DoubleStream;
+        iterate(arg0: number, arg1: ((arg0: number) => number) | $DoubleUnaryOperator): $DoubleStream;
         iterator(): $PrimitiveIterator$OfDouble;
         limit(arg0: number): $DoubleStream;
-        mapMulti(arg0: $DoubleStream$DoubleMapMultiConsumer): $DoubleStream;
-        mapToInt(arg0: $DoubleToIntFunction): $IntStream;
-        mapToLong(arg0: $DoubleToLongFunction): $LongStream;
-        mapToObj<U>(arg0: $DoubleFunction<U>): $Stream<U>;
-        map(arg0: $DoubleUnaryOperator): $DoubleStream;
+        mapMulti(arg0: ((arg0: number, arg1: $DoubleConsumer) => void) | $DoubleStream$DoubleMapMultiConsumer): $DoubleStream;
+        mapToInt(arg0: ((arg0: number) => number) | $DoubleToIntFunction): $IntStream;
+        mapToLong(arg0: ((arg0: number) => number) | $DoubleToLongFunction): $LongStream;
+        mapToObj<U>(arg0: ((arg0: number) => U) | $DoubleFunction<U>): $Stream<U>;
+        map(arg0: ((arg0: number) => number) | $DoubleUnaryOperator): $DoubleStream;
         max(): $OptionalDouble;
         min(): $OptionalDouble;
-        noneMatch(arg0: $DoublePredicate): boolean;
-        of(arg0?: number[]): $DoubleStream;
+        noneMatch(arg0: ((arg0: number) => boolean) | $DoublePredicate): boolean;
+        of(...arg0: number[]): $DoubleStream;
         of(arg0: number): $DoubleStream;
         parallel(): $DoubleStream;
-        peek(arg0: $DoubleConsumer): $DoubleStream;
-        reduce(arg0: number, arg1: $DoubleBinaryOperator): number;
-        reduce(arg0: $DoubleBinaryOperator): $OptionalDouble;
+        peek(arg0: ((arg0: number) => void) | $DoubleConsumer): $DoubleStream;
+        reduce(arg0: number, arg1: ((arg0: number, arg1: number) => number) | $DoubleBinaryOperator): number;
+        reduce(arg0: ((arg0: number, arg1: number) => number) | $DoubleBinaryOperator): $OptionalDouble;
         sequential(): $DoubleStream;
         skip(arg0: number): $DoubleStream;
         sorted(): $DoubleStream;
         spliterator(): $Spliterator$OfDouble;
         summaryStatistics(): $DoubleSummaryStatistics;
         sum(): number;
-        takeWhile(arg0: $DoublePredicate): $DoubleStream;
+        takeWhile(arg0: ((arg0: number) => boolean) | $DoublePredicate): $DoubleStream;
         toArray(): number[];
     }
 
@@ -89,57 +89,57 @@ declare module "java:java/util/stream" {
     }
 
     export interface $DoubleStream$DoubleMapMultiConsumer {
-        accept(arg0: number, arg1: $DoubleConsumer): void;
+        accept(arg0: number, arg1: ((arg0: number) => void) | $DoubleConsumer): void;
     }
 
     export interface $IntStream extends $BaseStream {
-        allMatch(arg0: $IntPredicate): boolean;
-        anyMatch(arg0: $IntPredicate): boolean;
+        allMatch(arg0: ((arg0: number) => boolean) | $IntPredicate): boolean;
+        anyMatch(arg0: ((arg0: number) => boolean) | $IntPredicate): boolean;
         asDoubleStream(): $DoubleStream;
         asLongStream(): $LongStream;
         average(): $OptionalDouble;
         boxed(): $Stream<number>;
         builder(): $IntStream$Builder;
-        collect<R>(arg0: $Supplier<R>, arg1: $ObjIntConsumer<R>, arg2: $BiConsumer<R, R>): R;
+        collect<R>(arg0: (() => R) | $Supplier<R>, arg1: ((arg0: R, arg1: number) => void) | $ObjIntConsumer<R>, arg2: ((arg0: R, arg1: R) => void) | $BiConsumer<R, R>): R;
         concat(arg0: $IntStream, arg1: $IntStream): $IntStream;
         count(): number;
         distinct(): $IntStream;
-        dropWhile(arg0: $IntPredicate): $IntStream;
+        dropWhile(arg0: ((arg0: number) => boolean) | $IntPredicate): $IntStream;
         empty(): $IntStream;
-        filter(arg0: $IntPredicate): $IntStream;
+        filter(arg0: ((arg0: number) => boolean) | $IntPredicate): $IntStream;
         findAny(): $OptionalInt;
         findFirst(): $OptionalInt;
-        flatMap(arg0: $IntFunction<$IntStream>): $IntStream;
-        forEachOrdered(arg0: $IntConsumer): void;
-        forEach(arg0: $IntConsumer): void;
-        generate(arg0: $IntSupplier): $IntStream;
-        iterate(arg0: number, arg1: $IntPredicate, arg2: $IntUnaryOperator): $IntStream;
-        iterate(arg0: number, arg1: $IntUnaryOperator): $IntStream;
+        flatMap(arg0: ((arg0: number) => $IntStream) | $IntFunction<$IntStream>): $IntStream;
+        forEachOrdered(arg0: ((arg0: number) => void) | $IntConsumer): void;
+        forEach(arg0: ((arg0: number) => void) | $IntConsumer): void;
+        generate(arg0: (() => number) | $IntSupplier): $IntStream;
+        iterate(arg0: number, arg1: ((arg0: number) => boolean) | $IntPredicate, arg2: ((arg0: number) => number) | $IntUnaryOperator): $IntStream;
+        iterate(arg0: number, arg1: ((arg0: number) => number) | $IntUnaryOperator): $IntStream;
         iterator(): $PrimitiveIterator$OfInt;
         limit(arg0: number): $IntStream;
-        mapMulti(arg0: $IntStream$IntMapMultiConsumer): $IntStream;
-        mapToDouble(arg0: $IntToDoubleFunction): $DoubleStream;
-        mapToLong(arg0: $IntToLongFunction): $LongStream;
-        mapToObj<U>(arg0: $IntFunction<U>): $Stream<U>;
-        map(arg0: $IntUnaryOperator): $IntStream;
+        mapMulti(arg0: ((arg0: number, arg1: $IntConsumer) => void) | $IntStream$IntMapMultiConsumer): $IntStream;
+        mapToDouble(arg0: ((arg0: number) => number) | $IntToDoubleFunction): $DoubleStream;
+        mapToLong(arg0: ((arg0: number) => number) | $IntToLongFunction): $LongStream;
+        mapToObj<U>(arg0: ((arg0: number) => U) | $IntFunction<U>): $Stream<U>;
+        map(arg0: ((arg0: number) => number) | $IntUnaryOperator): $IntStream;
         max(): $OptionalInt;
         min(): $OptionalInt;
-        noneMatch(arg0: $IntPredicate): boolean;
-        of(arg0?: number[]): $IntStream;
+        noneMatch(arg0: ((arg0: number) => boolean) | $IntPredicate): boolean;
+        of(...arg0: number[]): $IntStream;
         of(arg0: number): $IntStream;
         parallel(): $IntStream;
-        peek(arg0: $IntConsumer): $IntStream;
+        peek(arg0: ((arg0: number) => void) | $IntConsumer): $IntStream;
         rangeClosed(arg0: number, arg1: number): $IntStream;
         range(arg0: number, arg1: number): $IntStream;
-        reduce(arg0: number, arg1: $IntBinaryOperator): number;
-        reduce(arg0: $IntBinaryOperator): $OptionalInt;
+        reduce(arg0: number, arg1: ((arg0: number, arg1: number) => number) | $IntBinaryOperator): number;
+        reduce(arg0: ((arg0: number, arg1: number) => number) | $IntBinaryOperator): $OptionalInt;
         sequential(): $IntStream;
         skip(arg0: number): $IntStream;
         sorted(): $IntStream;
         spliterator(): $Spliterator$OfInt;
         summaryStatistics(): $IntSummaryStatistics;
         sum(): number;
-        takeWhile(arg0: $IntPredicate): $IntStream;
+        takeWhile(arg0: ((arg0: number) => boolean) | $IntPredicate): $IntStream;
         toArray(): number[];
     }
 
@@ -150,56 +150,56 @@ declare module "java:java/util/stream" {
     }
 
     export interface $IntStream$IntMapMultiConsumer {
-        accept(arg0: number, arg1: $IntConsumer): void;
+        accept(arg0: number, arg1: ((arg0: number) => void) | $IntConsumer): void;
     }
 
     export interface $LongStream extends $BaseStream {
-        allMatch(arg0: $LongPredicate): boolean;
-        anyMatch(arg0: $LongPredicate): boolean;
+        allMatch(arg0: ((arg0: number) => boolean) | $LongPredicate): boolean;
+        anyMatch(arg0: ((arg0: number) => boolean) | $LongPredicate): boolean;
         asDoubleStream(): $DoubleStream;
         average(): $OptionalDouble;
         boxed(): $Stream<number>;
         builder(): $LongStream$Builder;
-        collect<R>(arg0: $Supplier<R>, arg1: $ObjLongConsumer<R>, arg2: $BiConsumer<R, R>): R;
+        collect<R>(arg0: (() => R) | $Supplier<R>, arg1: ((arg0: R, arg1: number) => void) | $ObjLongConsumer<R>, arg2: ((arg0: R, arg1: R) => void) | $BiConsumer<R, R>): R;
         concat(arg0: $LongStream, arg1: $LongStream): $LongStream;
         count(): number;
         distinct(): $LongStream;
-        dropWhile(arg0: $LongPredicate): $LongStream;
+        dropWhile(arg0: ((arg0: number) => boolean) | $LongPredicate): $LongStream;
         empty(): $LongStream;
-        filter(arg0: $LongPredicate): $LongStream;
+        filter(arg0: ((arg0: number) => boolean) | $LongPredicate): $LongStream;
         findAny(): $OptionalLong;
         findFirst(): $OptionalLong;
-        flatMap(arg0: $LongFunction<$LongStream>): $LongStream;
-        forEachOrdered(arg0: $LongConsumer): void;
-        forEach(arg0: $LongConsumer): void;
-        generate(arg0: $LongSupplier): $LongStream;
-        iterate(arg0: number, arg1: $LongPredicate, arg2: $LongUnaryOperator): $LongStream;
-        iterate(arg0: number, arg1: $LongUnaryOperator): $LongStream;
+        flatMap(arg0: ((arg0: number) => $LongStream) | $LongFunction<$LongStream>): $LongStream;
+        forEachOrdered(arg0: ((arg0: number) => void) | $LongConsumer): void;
+        forEach(arg0: ((arg0: number) => void) | $LongConsumer): void;
+        generate(arg0: (() => number) | $LongSupplier): $LongStream;
+        iterate(arg0: number, arg1: ((arg0: number) => boolean) | $LongPredicate, arg2: ((arg0: number) => number) | $LongUnaryOperator): $LongStream;
+        iterate(arg0: number, arg1: ((arg0: number) => number) | $LongUnaryOperator): $LongStream;
         iterator(): $PrimitiveIterator$OfLong;
         limit(arg0: number): $LongStream;
-        mapMulti(arg0: $LongStream$LongMapMultiConsumer): $LongStream;
-        mapToDouble(arg0: $LongToDoubleFunction): $DoubleStream;
-        mapToInt(arg0: $LongToIntFunction): $IntStream;
-        mapToObj<U>(arg0: $LongFunction<U>): $Stream<U>;
-        map(arg0: $LongUnaryOperator): $LongStream;
+        mapMulti(arg0: ((arg0: number, arg1: $LongConsumer) => void) | $LongStream$LongMapMultiConsumer): $LongStream;
+        mapToDouble(arg0: ((arg0: number) => number) | $LongToDoubleFunction): $DoubleStream;
+        mapToInt(arg0: ((arg0: number) => number) | $LongToIntFunction): $IntStream;
+        mapToObj<U>(arg0: ((arg0: number) => U) | $LongFunction<U>): $Stream<U>;
+        map(arg0: ((arg0: number) => number) | $LongUnaryOperator): $LongStream;
         max(): $OptionalLong;
         min(): $OptionalLong;
-        noneMatch(arg0: $LongPredicate): boolean;
-        of(arg0?: number[]): $LongStream;
+        noneMatch(arg0: ((arg0: number) => boolean) | $LongPredicate): boolean;
+        of(...arg0: number[]): $LongStream;
         of(arg0: number): $LongStream;
         parallel(): $LongStream;
-        peek(arg0: $LongConsumer): $LongStream;
+        peek(arg0: ((arg0: number) => void) | $LongConsumer): $LongStream;
         rangeClosed(arg0: number, arg1: number): $LongStream;
         range(arg0: number, arg1: number): $LongStream;
-        reduce(arg0: $LongBinaryOperator): $OptionalLong;
-        reduce(arg0: number, arg1: $LongBinaryOperator): number;
+        reduce(arg0: ((arg0: number, arg1: number) => number) | $LongBinaryOperator): $OptionalLong;
+        reduce(arg0: number, arg1: ((arg0: number, arg1: number) => number) | $LongBinaryOperator): number;
         sequential(): $LongStream;
         skip(arg0: number): $LongStream;
         sorted(): $LongStream;
         spliterator(): $Spliterator$OfLong;
         summaryStatistics(): $LongSummaryStatistics;
         sum(): number;
-        takeWhile(arg0: $LongPredicate): $LongStream;
+        takeWhile(arg0: ((arg0: number) => boolean) | $LongPredicate): $LongStream;
         toArray(): number[];
     }
 
@@ -210,57 +210,57 @@ declare module "java:java/util/stream" {
     }
 
     export interface $LongStream$LongMapMultiConsumer {
-        accept(arg0: number, arg1: $LongConsumer): void;
+        accept(arg0: number, arg1: ((arg0: number) => void) | $LongConsumer): void;
     }
 
     export interface $Stream<T> extends $BaseStream {
-        allMatch(arg0: $Predicate<any>): boolean;
-        anyMatch(arg0: $Predicate<any>): boolean;
+        allMatch(arg0: ((arg0: T) => boolean) | $Predicate<any>): boolean;
+        anyMatch(arg0: ((arg0: T) => boolean) | $Predicate<any>): boolean;
         builder<T>(): $Stream$Builder<T>;
-        collect<R>(arg0: $Supplier<R>, arg1: $BiConsumer<R, any>, arg2: $BiConsumer<R, R>): R;
+        collect<R>(arg0: (() => R) | $Supplier<R>, arg1: ((arg0: R, arg1: T) => void) | $BiConsumer<R, any>, arg2: ((arg0: R, arg1: R) => void) | $BiConsumer<R, R>): R;
         collect<R, A>(arg0: $Collector<any, A, R>): R;
         concat<T>(arg0: $Stream<T>, arg1: $Stream<T>): $Stream<T>;
         count(): number;
         distinct(): $Stream<T>;
-        dropWhile(arg0: $Predicate<any>): $Stream<T>;
+        dropWhile(arg0: ((arg0: T) => boolean) | $Predicate<any>): $Stream<T>;
         empty<T>(): $Stream<T>;
-        filter(arg0: $Predicate<any>): $Stream<T>;
+        filter(arg0: ((arg0: T) => boolean) | $Predicate<any>): $Stream<T>;
         findAny(): $Optional<T>;
         findFirst(): $Optional<T>;
-        flatMapToDouble(arg0: $Function<any, $DoubleStream>): $DoubleStream;
-        flatMapToInt(arg0: $Function<any, $IntStream>): $IntStream;
-        flatMapToLong(arg0: $Function<any, $LongStream>): $LongStream;
-        flatMap<R>(arg0: $Function<any, $Stream<R>>): $Stream<R>;
-        forEachOrdered(arg0: $Consumer<any>): void;
-        forEach(arg0: $Consumer<any>): void;
-        generate<T>(arg0: $Supplier<T>): $Stream<T>;
-        iterate<T>(arg0: T, arg1: $Predicate<any>, arg2: $UnaryOperator<T>): $Stream<T>;
-        iterate<T>(arg0: T, arg1: $UnaryOperator<T>): $Stream<T>;
+        flatMapToDouble(arg0: ((arg0: T) => $DoubleStream) | $Function<any, $DoubleStream>): $DoubleStream;
+        flatMapToInt(arg0: ((arg0: T) => $IntStream) | $Function<any, $IntStream>): $IntStream;
+        flatMapToLong(arg0: ((arg0: T) => $LongStream) | $Function<any, $LongStream>): $LongStream;
+        flatMap<R>(arg0: ((arg0: T) => $Stream<R>) | $Function<any, $Stream<R>>): $Stream<R>;
+        forEachOrdered(arg0: ((arg0: T) => void) | $Consumer<any>): void;
+        forEach(arg0: ((arg0: T) => void) | $Consumer<any>): void;
+        generate<T>(arg0: (() => T) | $Supplier<T>): $Stream<T>;
+        iterate<T>(arg0: T, arg1: ((arg0: T) => boolean) | $Predicate<any>, arg2: ((arg0: T) => T) | $UnaryOperator<T>): $Stream<T>;
+        iterate<T>(arg0: T, arg1: ((arg0: T) => T) | $UnaryOperator<T>): $Stream<T>;
         limit(arg0: number): $Stream<T>;
-        mapMultiToDouble(arg0: $BiConsumer<any, any>): $DoubleStream;
-        mapMultiToInt(arg0: $BiConsumer<any, any>): $IntStream;
-        mapMultiToLong(arg0: $BiConsumer<any, any>): $LongStream;
-        mapMulti<R>(arg0: $BiConsumer<any, any>): $Stream<R>;
-        mapToDouble(arg0: $ToDoubleFunction<any>): $DoubleStream;
-        mapToInt(arg0: $ToIntFunction<any>): $IntStream;
-        mapToLong(arg0: $ToLongFunction<any>): $LongStream;
-        map<R>(arg0: $Function<any, R>): $Stream<R>;
+        mapMultiToDouble(arg0: ((arg0: T, arg1: $DoubleConsumer) => void) | $BiConsumer<any, any>): $DoubleStream;
+        mapMultiToInt(arg0: ((arg0: T, arg1: $IntConsumer) => void) | $BiConsumer<any, any>): $IntStream;
+        mapMultiToLong(arg0: ((arg0: T, arg1: $LongConsumer) => void) | $BiConsumer<any, any>): $LongStream;
+        mapMulti<R>(arg0: ((arg0: T, arg1: $Consumer<R>) => void) | $BiConsumer<any, any>): $Stream<R>;
+        mapToDouble(arg0: ((arg0: T) => number) | $ToDoubleFunction<any>): $DoubleStream;
+        mapToInt(arg0: ((arg0: T) => number) | $ToIntFunction<any>): $IntStream;
+        mapToLong(arg0: ((arg0: T) => number) | $ToLongFunction<any>): $LongStream;
+        map<R>(arg0: ((arg0: T) => R) | $Function<any, R>): $Stream<R>;
         max(arg0: $Comparator<any>): $Optional<T>;
         min(arg0: $Comparator<any>): $Optional<T>;
-        noneMatch(arg0: $Predicate<any>): boolean;
+        noneMatch(arg0: ((arg0: T) => boolean) | $Predicate<any>): boolean;
         ofNullable<T>(arg0: T): $Stream<T>;
-        of<T>(arg0?: T[]): $Stream<T>;
+        of<T>(...arg0: T[]): $Stream<T>;
         of<T>(arg0: T): $Stream<T>;
-        peek(arg0: $Consumer<any>): $Stream<T>;
-        reduce(arg0: T, arg1: $BinaryOperator<T>): T;
-        reduce<U>(arg0: U, arg1: $BiFunction<U, any, U>, arg2: $BinaryOperator<U>): U;
-        reduce(arg0: $BinaryOperator<T>): $Optional<T>;
+        peek(arg0: ((arg0: T) => void) | $Consumer<any>): $Stream<T>;
+        reduce(arg0: T, arg1: ((arg0: T, arg1: T) => T) | $BinaryOperator<T>): T;
+        reduce<U>(arg0: U, arg1: ((arg0: U, arg1: T) => U) | $BiFunction<U, any, U>, arg2: ((arg0: U, arg1: U) => U) | $BinaryOperator<U>): U;
+        reduce(arg0: ((arg0: T, arg1: T) => T) | $BinaryOperator<T>): $Optional<T>;
         skip(arg0: number): $Stream<T>;
         sorted(arg0: $Comparator<any>): $Stream<T>;
         sorted(): $Stream<T>;
-        takeWhile(arg0: $Predicate<any>): $Stream<T>;
-        toArray<A>(arg0: $IntFunction<A[]>): A[];
-        toArray(): object[];
+        takeWhile(arg0: ((arg0: T) => boolean) | $Predicate<any>): $Stream<T>;
+        toArray<A>(arg0: ((arg0: number) => A) | $IntFunction<A[]>): A[];
+        toArray(): any[];
         toList(): $List<T>;
     }
 

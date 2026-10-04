@@ -12,43 +12,43 @@ declare module "java:java/util" {
         add(arg0: E): boolean;
         clear(): void;
         containsAll(arg0: any[]): boolean;
-        contains(arg0: object): boolean;
-        equals(arg0: object): boolean;
+        contains(arg0: any): boolean;
+        equals(arg0: any): boolean;
         hashCode(): number;
         isEmpty(): boolean;
         iterator(): $Iterator<E>;
         parallelStream(): $Stream<E>;
         removeAll(arg0: any[]): boolean;
-        removeIf(arg0: $Predicate<any>): boolean;
-        remove(arg0: object): boolean;
+        removeIf(arg0: ((arg0: E) => boolean) | $Predicate<any>): boolean;
+        remove(arg0: any): boolean;
         retainAll(arg0: any[]): boolean;
         size(): number;
         spliterator(): $Spliterator<E>;
         stream(): $Stream<E>;
         toArray<T>(arg0: T[]): T[];
-        toArray<T>(arg0: $IntFunction<T[]>): T[];
-        toArray(): object[];
+        toArray<T>(arg0: ((arg0: number) => T) | $IntFunction<T[]>): T[];
+        toArray(): any[];
     }
 
     export interface $Comparator<T> {
         compare(arg0: T, arg1: T): number;
-        comparingDouble<T>(arg0: $ToDoubleFunction<any>): $Comparator<T>;
-        comparingInt<T>(arg0: $ToIntFunction<any>): $Comparator<T>;
-        comparingLong<T>(arg0: $ToLongFunction<any>): $Comparator<T>;
-        comparing<T, U>(arg0: $Function<any, U>, arg1: $Comparator<any>): $Comparator<T>;
-        comparing<T, U>(arg0: $Function<any, U>): $Comparator<T>;
-        equals(arg0: object): boolean;
+        comparingDouble<T>(arg0: ((arg0: T) => number) | $ToDoubleFunction<any>): $Comparator<T>;
+        comparingInt<T>(arg0: ((arg0: T) => number) | $ToIntFunction<any>): $Comparator<T>;
+        comparingLong<T>(arg0: ((arg0: T) => number) | $ToLongFunction<any>): $Comparator<T>;
+        comparing<T, U>(arg0: ((arg0: T) => U) | $Function<any, U>, arg1: $Comparator<any>): $Comparator<T>;
+        comparing<T, U>(arg0: ((arg0: T) => U) | $Function<any, U>): $Comparator<T>;
+        equals(arg0: any): boolean;
         naturalOrder<T>(): $Comparator<T>;
         nullsFirst<T>(arg0: $Comparator<any>): $Comparator<T>;
         nullsLast<T>(arg0: $Comparator<any>): $Comparator<T>;
         reverseOrder<T>(): $Comparator<T>;
         reversed(): $Comparator<T>;
-        thenComparingDouble(arg0: $ToDoubleFunction<any>): $Comparator<T>;
-        thenComparingInt(arg0: $ToIntFunction<any>): $Comparator<T>;
-        thenComparingLong(arg0: $ToLongFunction<any>): $Comparator<T>;
+        thenComparingDouble(arg0: ((arg0: T) => number) | $ToDoubleFunction<any>): $Comparator<T>;
+        thenComparingInt(arg0: ((arg0: T) => number) | $ToIntFunction<any>): $Comparator<T>;
+        thenComparingLong(arg0: ((arg0: T) => number) | $ToLongFunction<any>): $Comparator<T>;
         thenComparing(arg0: $Comparator<any>): $Comparator<T>;
-        thenComparing<U>(arg0: $Function<any, U>, arg1: $Comparator<any>): $Comparator<T>;
-        thenComparing<U>(arg0: $Function<any, U>): $Comparator<T>;
+        thenComparing<U>(arg0: ((arg0: T) => U) | $Function<any, U>, arg1: $Comparator<any>): $Comparator<T>;
+        thenComparing<U>(arg0: ((arg0: T) => U) | $Function<any, U>): $Comparator<T>;
     }
 
     export class $DoubleSummaryStatistics implements $DoubleConsumer {
@@ -94,7 +94,7 @@ declare module "java:java/util" {
     }
 
     export interface $Iterator<E> {
-        forEachRemaining(arg0: $Consumer<any>): void;
+        forEachRemaining(arg0: ((arg0: E) => void) | $Consumer<any>): void;
         hasNext(): boolean;
         next(): E;
         remove(): void;
@@ -109,20 +109,20 @@ declare module "java:java/util" {
         add(arg0: number, arg1: E): void;
         clear(): void;
         containsAll(arg0: any[]): boolean;
-        contains(arg0: object): boolean;
+        contains(arg0: any): boolean;
         copyOf<E>(arg0: E[]): $List<E>;
-        equals(arg0: object): boolean;
+        equals(arg0: any): boolean;
         getFirst(): E;
         getLast(): E;
         get(arg0: number): E;
         hashCode(): number;
-        indexOf(arg0: object): number;
+        indexOf(arg0: any): number;
         isEmpty(): boolean;
         iterator(): $Iterator<E>;
-        lastIndexOf(arg0: object): number;
+        lastIndexOf(arg0: any): number;
         listIterator(arg0: number): $ListIterator<E>;
         listIterator(): $ListIterator<E>;
-        of<E>(arg0?: E[]): $List<E>;
+        of<E>(...arg0: E[]): $List<E>;
         of<E>(arg0: E, arg1: E, arg2: E, arg3: E, arg4: E, arg5: E, arg6: E, arg7: E, arg8: E, arg9: E): $List<E>;
         of<E>(arg0: E, arg1: E, arg2: E, arg3: E, arg4: E, arg5: E, arg6: E, arg7: E, arg8: E): $List<E>;
         of<E>(arg0: E, arg1: E, arg2: E, arg3: E, arg4: E, arg5: E, arg6: E, arg7: E): $List<E>;
@@ -138,8 +138,8 @@ declare module "java:java/util" {
         removeFirst(): E;
         removeLast(): E;
         remove(arg0: number): E;
-        remove(arg0: object): boolean;
-        replaceAll(arg0: $UnaryOperator<E>): void;
+        remove(arg0: any): boolean;
+        replaceAll(arg0: ((arg0: E) => E) | $UnaryOperator<E>): void;
         retainAll(arg0: any[]): boolean;
         reversed(): $List<E>;
         set(arg0: number, arg1: E): E;
@@ -148,7 +148,7 @@ declare module "java:java/util" {
         spliterator(): $Spliterator<E>;
         subList(arg0: number, arg1: number): $List<E>;
         toArray<T>(arg0: T[]): T[];
-        toArray(): object[];
+        toArray(): any[];
     }
 
     export interface $ListIterator<E> extends $Iterator {
@@ -239,8 +239,8 @@ declare module "java:java/util" {
         static of(arg0: string): $Locale;
         static setDefault(arg0: $Locale$Category_, arg1: $Locale): void;
         static setDefault(arg0: $Locale): void;
-        clone(): object;
-        equals(arg0: object): boolean;
+        clone(): any;
+        equals(arg0: any): boolean;
         getDisplayCountry(arg0: $Locale): string;
         getDisplayLanguage(arg0: $Locale): string;
         getDisplayName(arg0: $Locale): string;
@@ -301,7 +301,7 @@ declare module "java:java/util" {
         static mapEquivalents(arg0: $Locale$LanguageRange[], arg1: { [key: string]: string[] }): $List<$Locale$LanguageRange>;
         static parse(arg0: string, arg1: { [key: string]: string[] }): $List<$Locale$LanguageRange>;
         static parse(arg0: string): $List<$Locale$LanguageRange>;
-        equals(arg0: object): boolean;
+        equals(arg0: any): boolean;
         hashCode(): number;
         toString(): string;
     }
@@ -327,23 +327,23 @@ declare module "java:java/util" {
 
     export interface $Map<K, V> {
         clear(): void;
-        computeIfAbsent(arg0: K, arg1: $Function<any, V>): V;
-        computeIfPresent(arg0: K, arg1: $BiFunction<any, any, V>): V;
-        compute(arg0: K, arg1: $BiFunction<any, any, V>): V;
-        containsKey(arg0: object): boolean;
-        containsValue(arg0: object): boolean;
+        computeIfAbsent(arg0: K, arg1: ((arg0: K) => V) | $Function<any, V>): V;
+        computeIfPresent(arg0: K, arg1: ((arg0: K, arg1: V) => V) | $BiFunction<any, any, V>): V;
+        compute(arg0: K, arg1: ((arg0: K, arg1: V) => V) | $BiFunction<any, any, V>): V;
+        containsKey(arg0: any): boolean;
+        containsValue(arg0: any): boolean;
         copyOf<K, V>(arg0: { [key: K]: V }): $Map<K, V>;
         entrySet(): $Set<$Map$Entry<K, V>>;
         entry<K, V>(arg0: K, arg1: V): $Map$Entry<K, V>;
-        equals(arg0: object): boolean;
-        forEach(arg0: $BiConsumer<any, any>): void;
-        getOrDefault(arg0: object, arg1: V): V;
-        get(arg0: object): V;
+        equals(arg0: any): boolean;
+        forEach(arg0: ((arg0: K, arg1: V) => void) | $BiConsumer<any, any>): void;
+        getOrDefault(arg0: any, arg1: V): V;
+        get(arg0: any): V;
         hashCode(): number;
         isEmpty(): boolean;
         keySet(): $Set<K>;
-        merge(arg0: K, arg1: V, arg2: $BiFunction<any, any, V>): V;
-        ofEntries<K, V>(arg0?: $Map$Entry<K, V>[]): $Map<K, V>;
+        merge(arg0: K, arg1: V, arg2: ((arg0: V, arg1: V) => V) | $BiFunction<any, any, V>): V;
+        ofEntries<K, V>(...arg0: $Map$Entry<K, V>[]): $Map<K, V>;
         of<K, V>(arg0: K, arg1: V, arg2: K, arg3: V, arg4: K, arg5: V, arg6: K, arg7: V, arg8: K, arg9: V, arg10: K, arg11: V, arg12: K, arg13: V, arg14: K, arg15: V, arg16: K, arg17: V, arg18: K, arg19: V): $Map<K, V>;
         of<K, V>(arg0: K, arg1: V, arg2: K, arg3: V, arg4: K, arg5: V, arg6: K, arg7: V, arg8: K, arg9: V, arg10: K, arg11: V, arg12: K, arg13: V, arg14: K, arg15: V, arg16: K, arg17: V): $Map<K, V>;
         of<K, V>(arg0: K, arg1: V, arg2: K, arg3: V, arg4: K, arg5: V, arg6: K, arg7: V, arg8: K, arg9: V, arg10: K, arg11: V, arg12: K, arg13: V, arg14: K, arg15: V): $Map<K, V>;
@@ -358,9 +358,9 @@ declare module "java:java/util" {
         putAll(arg0: { [key: K]: V }): void;
         putIfAbsent(arg0: K, arg1: V): V;
         put(arg0: K, arg1: V): V;
-        remove(arg0: object, arg1: object): boolean;
-        remove(arg0: object): V;
-        replaceAll(arg0: $BiFunction<any, any, V>): void;
+        remove(arg0: any, arg1: any): boolean;
+        remove(arg0: any): V;
+        replaceAll(arg0: ((arg0: K, arg1: V) => V) | $BiFunction<any, any, V>): void;
         replace(arg0: K, arg1: V, arg2: V): boolean;
         replace(arg0: K, arg1: V): V;
         size(): number;
@@ -373,7 +373,7 @@ declare module "java:java/util" {
         comparingByValue<K, V>(arg0: $Comparator<any>): $Comparator<$Map$Entry<K, V>>;
         comparingByValue<K, V>(): $Comparator<$Map$Entry<K, V>>;
         copyOf<K, V>(arg0: $Map$Entry<K, V>): $Map$Entry<K, V>;
-        equals(arg0: object): boolean;
+        equals(arg0: any): boolean;
         getKey(): K;
         getValue(): V;
         hashCode(): number;
@@ -388,19 +388,19 @@ declare module "java:java/util" {
         static empty<T>(): $Optional<T>;
         static ofNullable<T>(arg0: T): $Optional<T>;
         static of<T>(arg0: T): $Optional<T>;
-        equals(arg0: object): boolean;
-        filter(arg0: $Predicate<any>): $Optional<T>;
-        flatMap<U>(arg0: $Function<any, $Optional<U>>): $Optional<U>;
+        equals(arg0: any): boolean;
+        filter(arg0: ((arg0: T) => boolean) | $Predicate<any>): $Optional<T>;
+        flatMap<U>(arg0: ((arg0: T) => $Optional<U>) | $Function<any, $Optional<U>>): $Optional<U>;
         get(): T;
         hashCode(): number;
-        ifPresentOrElse(arg0: $Consumer<any>, arg1: $Runnable): void;
-        ifPresent(arg0: $Consumer<any>): void;
-        map<U>(arg0: $Function<any, U>): $Optional<U>;
-        orElseGet(arg0: $Supplier<T>): T;
-        orElseThrow<X>(arg0: $Supplier<X>): T;
+        ifPresentOrElse(arg0: ((arg0: T) => void) | $Consumer<any>, arg1: (() => void) | $Runnable): void;
+        ifPresent(arg0: ((arg0: T) => void) | $Consumer<any>): void;
+        map<U>(arg0: ((arg0: T) => U) | $Function<any, U>): $Optional<U>;
+        orElseGet(arg0: (() => T) | $Supplier<T>): T;
+        orElseThrow<X>(arg0: (() => X) | $Supplier<X>): T;
         orElseThrow(): T;
         orElse(arg0: T): T;
-        or(arg0: $Supplier<$Optional<T>>): $Optional<T>;
+        or(arg0: (() => $Optional<T>) | $Supplier<$Optional<T>>): $Optional<T>;
         stream(): $Stream<T>;
         toString(): string;
     }
@@ -414,12 +414,12 @@ declare module "java:java/util" {
         isPresent(): boolean;
         static empty(): $OptionalDouble;
         static of(arg0: number): $OptionalDouble;
-        equals(arg0: object): boolean;
+        equals(arg0: any): boolean;
         hashCode(): number;
-        ifPresentOrElse(arg0: $DoubleConsumer, arg1: $Runnable): void;
-        ifPresent(arg0: $DoubleConsumer): void;
-        orElseGet(arg0: $DoubleSupplier): number;
-        orElseThrow<X>(arg0: $Supplier<X>): number;
+        ifPresentOrElse(arg0: ((arg0: number) => void) | $DoubleConsumer, arg1: (() => void) | $Runnable): void;
+        ifPresent(arg0: ((arg0: number) => void) | $DoubleConsumer): void;
+        orElseGet(arg0: (() => number) | $DoubleSupplier): number;
+        orElseThrow<X>(arg0: (() => X) | $Supplier<X>): number;
         orElseThrow(): number;
         orElse(arg0: number): number;
         stream(): $DoubleStream;
@@ -435,12 +435,12 @@ declare module "java:java/util" {
         isPresent(): boolean;
         static empty(): $OptionalInt;
         static of(arg0: number): $OptionalInt;
-        equals(arg0: object): boolean;
+        equals(arg0: any): boolean;
         hashCode(): number;
-        ifPresentOrElse(arg0: $IntConsumer, arg1: $Runnable): void;
-        ifPresent(arg0: $IntConsumer): void;
-        orElseGet(arg0: $IntSupplier): number;
-        orElseThrow<X>(arg0: $Supplier<X>): number;
+        ifPresentOrElse(arg0: ((arg0: number) => void) | $IntConsumer, arg1: (() => void) | $Runnable): void;
+        ifPresent(arg0: ((arg0: number) => void) | $IntConsumer): void;
+        orElseGet(arg0: (() => number) | $IntSupplier): number;
+        orElseThrow<X>(arg0: (() => X) | $Supplier<X>): number;
         orElseThrow(): number;
         orElse(arg0: number): number;
         stream(): $IntStream;
@@ -456,12 +456,12 @@ declare module "java:java/util" {
         isPresent(): boolean;
         static empty(): $OptionalLong;
         static of(arg0: number): $OptionalLong;
-        equals(arg0: object): boolean;
+        equals(arg0: any): boolean;
         hashCode(): number;
-        ifPresentOrElse(arg0: $LongConsumer, arg1: $Runnable): void;
-        ifPresent(arg0: $LongConsumer): void;
-        orElseGet(arg0: $LongSupplier): number;
-        orElseThrow<X>(arg0: $Supplier<X>): number;
+        ifPresentOrElse(arg0: ((arg0: number) => void) | $LongConsumer, arg1: (() => void) | $Runnable): void;
+        ifPresent(arg0: ((arg0: number) => void) | $LongConsumer): void;
+        orElseGet(arg0: (() => number) | $LongSupplier): number;
+        orElseThrow<X>(arg0: (() => X) | $Supplier<X>): number;
         orElseThrow(): number;
         orElse(arg0: number): number;
         stream(): $LongStream;
@@ -473,22 +473,22 @@ declare module "java:java/util" {
     }
 
     export interface $PrimitiveIterator$OfDouble extends $PrimitiveIterator {
-        forEachRemaining(arg0: $Consumer<any>): void;
-        forEachRemaining(arg0: $DoubleConsumer): void;
+        forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
+        forEachRemaining(arg0: ((arg0: number) => void) | $DoubleConsumer): void;
         nextDouble(): number;
         next(): number;
     }
 
     export interface $PrimitiveIterator$OfInt extends $PrimitiveIterator {
-        forEachRemaining(arg0: $Consumer<any>): void;
-        forEachRemaining(arg0: $IntConsumer): void;
+        forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
+        forEachRemaining(arg0: ((arg0: number) => void) | $IntConsumer): void;
         nextInt(): number;
         next(): number;
     }
 
     export interface $PrimitiveIterator$OfLong extends $PrimitiveIterator {
-        forEachRemaining(arg0: $Consumer<any>): void;
-        forEachRemaining(arg0: $LongConsumer): void;
+        forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
+        forEachRemaining(arg0: ((arg0: number) => void) | $LongConsumer): void;
         nextLong(): number;
         next(): number;
     }
@@ -525,13 +525,13 @@ declare module "java:java/util" {
         add(arg0: E): boolean;
         clear(): void;
         containsAll(arg0: any[]): boolean;
-        contains(arg0: object): boolean;
+        contains(arg0: any): boolean;
         copyOf<E>(arg0: E[]): $Set<E>;
-        equals(arg0: object): boolean;
+        equals(arg0: any): boolean;
         hashCode(): number;
         isEmpty(): boolean;
         iterator(): $Iterator<E>;
-        of<E>(arg0?: E[]): $Set<E>;
+        of<E>(...arg0: E[]): $Set<E>;
         of<E>(arg0: E, arg1: E, arg2: E, arg3: E, arg4: E, arg5: E, arg6: E, arg7: E, arg8: E, arg9: E): $Set<E>;
         of<E>(arg0: E, arg1: E, arg2: E, arg3: E, arg4: E, arg5: E, arg6: E, arg7: E, arg8: E): $Set<E>;
         of<E>(arg0: E, arg1: E, arg2: E, arg3: E, arg4: E, arg5: E, arg6: E, arg7: E): $Set<E>;
@@ -544,12 +544,12 @@ declare module "java:java/util" {
         of<E>(arg0: E): $Set<E>;
         of<E>(): $Set<E>;
         removeAll(arg0: any[]): boolean;
-        remove(arg0: object): boolean;
+        remove(arg0: any): boolean;
         retainAll(arg0: any[]): boolean;
         size(): number;
         spliterator(): $Spliterator<E>;
         toArray<T>(arg0: T[]): T[];
-        toArray(): object[];
+        toArray(): any[];
     }
 
     export interface $SortedMap<K, V> extends $SequencedMap {
@@ -570,11 +570,11 @@ declare module "java:java/util" {
     export interface $Spliterator<T> {
         characteristics(): number;
         estimateSize(): number;
-        forEachRemaining(arg0: $Consumer<any>): void;
+        forEachRemaining(arg0: ((arg0: T) => void) | $Consumer<any>): void;
         getComparator(): $Comparator<any>;
         getExactSizeIfKnown(): number;
         hasCharacteristics(arg0: number): boolean;
-        tryAdvance(arg0: $Consumer<any>): boolean;
+        tryAdvance(arg0: ((arg0: T) => void) | $Consumer<any>): boolean;
         trySplit(): $Spliterator<T>;
         static CONCURRENT: number;
         static DISTINCT: number;
@@ -587,26 +587,26 @@ declare module "java:java/util" {
     }
 
     export interface $Spliterator$OfDouble extends $Spliterator$OfPrimitive {
-        forEachRemaining(arg0: $Consumer<any>): void;
-        forEachRemaining(arg0: $DoubleConsumer): void;
-        tryAdvance(arg0: $Consumer<any>): boolean;
-        tryAdvance(arg0: $DoubleConsumer): boolean;
+        forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
+        forEachRemaining(arg0: ((arg0: number) => void) | $DoubleConsumer): void;
+        tryAdvance(arg0: ((arg0: number) => void) | $Consumer<any>): boolean;
+        tryAdvance(arg0: ((arg0: number) => void) | $DoubleConsumer): boolean;
         trySplit(): $Spliterator$OfDouble;
     }
 
     export interface $Spliterator$OfInt extends $Spliterator$OfPrimitive {
-        forEachRemaining(arg0: $Consumer<any>): void;
-        forEachRemaining(arg0: $IntConsumer): void;
-        tryAdvance(arg0: $Consumer<any>): boolean;
-        tryAdvance(arg0: $IntConsumer): boolean;
+        forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
+        forEachRemaining(arg0: ((arg0: number) => void) | $IntConsumer): void;
+        tryAdvance(arg0: ((arg0: number) => void) | $Consumer<any>): boolean;
+        tryAdvance(arg0: ((arg0: number) => void) | $IntConsumer): boolean;
         trySplit(): $Spliterator$OfInt;
     }
 
     export interface $Spliterator$OfLong extends $Spliterator$OfPrimitive {
-        forEachRemaining(arg0: $Consumer<any>): void;
-        forEachRemaining(arg0: $LongConsumer): void;
-        tryAdvance(arg0: $Consumer<any>): boolean;
-        tryAdvance(arg0: $LongConsumer): boolean;
+        forEachRemaining(arg0: ((arg0: number) => void) | $Consumer<any>): void;
+        forEachRemaining(arg0: ((arg0: number) => void) | $LongConsumer): void;
+        tryAdvance(arg0: ((arg0: number) => void) | $Consumer<any>): boolean;
+        tryAdvance(arg0: ((arg0: number) => void) | $LongConsumer): boolean;
         trySplit(): $Spliterator$OfLong;
     }
 

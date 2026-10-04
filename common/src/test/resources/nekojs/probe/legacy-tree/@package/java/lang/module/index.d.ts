@@ -15,13 +15,13 @@ declare module "java:java/lang/module" {
         static newModule(arg0: string, arg1: $ModuleDescriptor$Modifier_[]): $ModuleDescriptor$Builder;
         static newModule(arg0: string): $ModuleDescriptor$Builder;
         static newOpenModule(arg0: string): $ModuleDescriptor$Builder;
-        static read(arg0: $InputStream, arg1: $Supplier<string[]>): $ModuleDescriptor;
+        static read(arg0: $InputStream, arg1: (() => string[]) | $Supplier<string[]>): $ModuleDescriptor;
         static read(arg0: $InputStream): $ModuleDescriptor;
-        static read(arg0: $ByteBuffer, arg1: $Supplier<string[]>): $ModuleDescriptor;
+        static read(arg0: $ByteBuffer, arg1: (() => string[]) | $Supplier<string[]>): $ModuleDescriptor;
         static read(arg0: $ByteBuffer): $ModuleDescriptor;
         accessFlags(): $Set<$AccessFlag>;
         compareTo(arg0: $ModuleDescriptor): number;
-        equals(arg0: object): boolean;
+        equals(arg0: any): boolean;
         exports(): $Set<$ModuleDescriptor$Exports>;
         hashCode(): number;
         mainClass(): $Optional<string>;

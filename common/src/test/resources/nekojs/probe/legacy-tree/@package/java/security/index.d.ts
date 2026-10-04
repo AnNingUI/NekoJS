@@ -15,7 +15,7 @@ declare module "java:java/security" {
         getCodeSigners(): $CodeSigner[];
         get location(): $URL;
         getLocation(): $URL;
-        equals(arg0: object): boolean;
+        equals(arg0: any): boolean;
         hashCode(): number;
         implies(arg0: $CodeSource): boolean;
         toString(): string;
@@ -27,8 +27,8 @@ declare module "java:java/security" {
         getActions(): string;
         get name(): string;
         getName(): string;
-        checkGuard(arg0: object): void;
-        equals(arg0: object): boolean;
+        checkGuard(arg0: any): void;
+        equals(arg0: any): boolean;
         hashCode(): number;
         implies(arg0: $Permission): boolean;
         newPermissionCollection(): $PermissionCollection;

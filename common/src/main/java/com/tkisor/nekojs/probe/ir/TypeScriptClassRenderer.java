@@ -238,11 +238,32 @@ public final class TypeScriptClassRenderer {
         for (int i = 0; i < params.size(); i++) {
             MethodDecl.MethodParam p = params.get(i);
             if (i > 0) sb.append(", ");
+            // 变参渲染成 TS 的 rest：`...args: T[]`。
+            //
+            // 之前渲染成 `arg0?: T[]`（一个可选数组参数），TS 上虽可调用，但要求脚本写
+            // `send(['a', 'b'])`；而 Java 侧是 `Object...`，JS 侧的真实用法是
+            // `send('a', 'b')` —— 两者对不上，编辑器会把正确写法标红。
+            // rest 语法与 Java 变参语义一致，也与调用方的直觉一致。
+            //
+            // rest 参数必须是末位、且不能再带 `?`（TS 语法不允许 `...args?:`）。
+            // applyParameters 的调用方保证 varargs 已在末位（TypeReflector 只在末位置该标记）。
+            if (p.varargs) {
+                // renderSlot 对数组槽已带 `[]`（如 `Object[]...`），再补一次会出 `T[][]`；
+                // 对类型变量槽只给出 `T`，而 rest 必须是数组——补成 `T[]` 才是合法的。
+                // 联合必须先整体加括号：`A | B[]` 里的 `[]` 只作用于 B，rest 仍不是数组类型。
+                String element = renderSlot(p.type, true);
+                if (element.endsWith("[]")) {
+                    sb.append("...").append(tsParamName(p.name)).append(": ").append(element);
+                } else {
+                    String arrayType = element.contains(" | ") ? "(" + element + ")[]" : element + "[]";
+                    sb.append("...").append(tsParamName(p.name)).append(": ").append(arrayType);
+                }
+                continue;
+            }
             sb.append(tsParamName(p.name));
-            if (p.varargs || p.optional) sb.append("?");
+            if (p.optional) sb.append("?");
             sb.append(": ");
             sb.append(renderSlot(p.type, true));
-            if (p.varargs) sb.append("[]");
         }
     }
 
@@ -339,12 +360,52 @@ public final class TypeScriptClassRenderer {
             case PRIMITIVE -> mapPrimT(ref.name());
             case TYPE_VARIABLE -> ref.name();
             case ARRAY -> renderTypeRef(ref.arguments().get(0), aliases, input) + "[]";
+            // 联合里若是函数类型，**必须加括号**：TS 的 `=>` 优先级低于 `|`，
+            // 写成 `(...args) => any | $X` 会被解析成 `(...args) => (any | $X)`，
+            // 联合落到返回类型上，参数位置等于没生效。实测过这个陷阱。
             case UNION -> ref.arguments().stream()
-                    .map(a -> renderTypeRef(a, aliases, input))
+                    .map(a -> a.kind() == ApiTypeRef.Kind.CALLBACK
+                            ? "(" + renderTypeRef(a, aliases, input) + ")"
+                            : renderTypeRef(a, aliases, input))
                     .collect(Collectors.joining(" | "));
             case SYMBOL -> renderSymbol(ref, aliases, input);
-            case CALLBACK -> "(...args: any[]) => any";
+            case CALLBACK -> renderCallback(ref, aliases, input);
         };
+    }
+
+    /**
+     * CALLBACK → {@code (arg0: T, arg1: U) => R}。
+     *
+     * <p>用 {@link ApiTypeRef#callbackSignature()} 里的真实签名，而不是退化写法
+     * {@code (...args: any[]) => any}——后者丢掉了参数类型，编辑器就指不出该传什么，
+     * 而"能看出该传什么"正是把函数式接口渲染成回调的意义。
+     *
+     * <p>没有签名信息时（手工构造的 CALLBACK）才退回 {@code (...args: any[]) => any}。
+     */
+    private static String renderCallback(ApiTypeRef ref, TypeAliasRegistry aliases, boolean input) {
+        var sig = ref.callbackSignature();
+        if (sig == null || sig.parameters() == null) {
+            return "(...args: any[]) => any";
+        }
+        var params = sig.parameters().stream()
+                .map(p -> {
+                    // 变参要渲染成 `...name: T[]`，不能按普通参数写 `name: T`——
+                    // 否则 `(Object... args)` 会变成 `(arg0: object[]) => object`，
+                    // 而脚本传的是 `(msg, n) => ...` 这种普通函数，参数个数对不上。
+                    // 注意 TypeReflector 已把变参的类型扁平化为**组件类型**，所以这里补 `[]`；
+                    // 数组槽已自带 `[]`，再补会出 `[][]`。
+                    var type = renderTypeRef(p.type(), aliases, input);
+                    if (!p.varargs()) {
+                        return p.name() + ": " + type;
+                    }
+                    if (type.endsWith("[]")) {
+                        return "...args: " + type;
+                    }
+                    // 联合必须先整体加括号：`A | B[]` 的 `[]` 只作用于 B，rest 仍非数组
+                    return "...args: " + (type.contains(" | ") ? "(" + type + ")[]" : type + "[]");
+                })
+                .collect(Collectors.joining(", "));
+        return "(" + params + ") => " + renderTypeRef(sig.returnType(), aliases, input);
     }
 
     /** SYMBOL 渲染：input 别名（集合/类）优先，否则 {@code $Name<实参...>}（实参递归、input 传播）。 */
@@ -405,7 +466,16 @@ public final class TypeScriptClassRenderer {
             case "int", "byte", "short", "long", "float", "double", "number" -> "number";
             case "char", "string" -> "string";
             case "void" -> "void";
-            case "object" -> "object";
+            // Java 的 Object → TS 的 any，**不是** object。
+            //
+            // TS 的 `object` 明确排除原始类型（string/number/boolean 都不算），而 Java 的
+            // Object 能持有任意值。映射成 object 会让所有接收 Object 的参数拒绝原始类型值：
+            //   void fn(Object... args)  →  fn((msg: string) => ...)  报「object 不能赋给 string」
+            // 于是插件里所有收函数式接口/Object 参数的方法都传不进 lambda。
+            //
+            // KubeJS 配套的 ProbeJS 正是映射为 any（其 TypeConverter 的 `default -> Types.ANY`），
+            // 这里与它对齐。代价是 Object 参数不再有类型校验——但那个位置本来也校验不了什么。
+            case "object" -> "any";
             default -> "any";
         };
     }

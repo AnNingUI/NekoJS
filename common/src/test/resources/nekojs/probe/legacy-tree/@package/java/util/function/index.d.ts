@@ -3,11 +3,11 @@ import { $Comparator } from "java:java/util";
 declare module "java:java/util/function" {
     export interface $BiConsumer<T, U> {
         accept(arg0: T, arg1: U): void;
-        andThen(arg0: $BiConsumer<any, any>): $BiConsumer<T, U>;
+        andThen(arg0: ((arg0: T, arg1: U) => void) | $BiConsumer<any, any>): $BiConsumer<T, U>;
     }
 
     export interface $BiFunction<T, U, R> {
-        andThen<V>(arg0: $Function<any, V>): $BiFunction<T, U, V>;
+        andThen<V>(arg0: ((arg0: R) => V) | $Function<any, V>): $BiFunction<T, U, V>;
         apply(arg0: T, arg1: U): R;
     }
 
@@ -18,7 +18,7 @@ declare module "java:java/util/function" {
 
     export interface $Consumer<T> {
         accept(arg0: T): void;
-        andThen(arg0: $Consumer<any>): $Consumer<T>;
+        andThen(arg0: ((arg0: T) => void) | $Consumer<any>): $Consumer<T>;
     }
 
     export interface $DoubleBinaryOperator {
@@ -27,7 +27,7 @@ declare module "java:java/util/function" {
 
     export interface $DoubleConsumer {
         accept(arg0: number): void;
-        andThen(arg0: $DoubleConsumer): $DoubleConsumer;
+        andThen(arg0: ((arg0: number) => void) | $DoubleConsumer): $DoubleConsumer;
     }
 
     export interface $DoubleFunction<R> {
@@ -35,9 +35,9 @@ declare module "java:java/util/function" {
     }
 
     export interface $DoublePredicate {
-        and(arg0: $DoublePredicate): $DoublePredicate;
+        and(arg0: ((arg0: number) => boolean) | $DoublePredicate): $DoublePredicate;
         negate(): $DoublePredicate;
-        or(arg0: $DoublePredicate): $DoublePredicate;
+        or(arg0: ((arg0: number) => boolean) | $DoublePredicate): $DoublePredicate;
         test(arg0: number): boolean;
     }
 
@@ -54,16 +54,16 @@ declare module "java:java/util/function" {
     }
 
     export interface $DoubleUnaryOperator {
-        andThen(arg0: $DoubleUnaryOperator): $DoubleUnaryOperator;
+        andThen(arg0: ((arg0: number) => number) | $DoubleUnaryOperator): $DoubleUnaryOperator;
         applyAsDouble(arg0: number): number;
-        compose(arg0: $DoubleUnaryOperator): $DoubleUnaryOperator;
+        compose(arg0: ((arg0: number) => number) | $DoubleUnaryOperator): $DoubleUnaryOperator;
         identity(): $DoubleUnaryOperator;
     }
 
     export interface $Function<T, R> {
-        andThen<V>(arg0: $Function<any, V>): $Function<T, V>;
+        andThen<V>(arg0: ((arg0: R) => V) | $Function<any, V>): $Function<T, V>;
         apply(arg0: T): R;
-        compose<V>(arg0: $Function<any, T>): $Function<V, R>;
+        compose<V>(arg0: ((arg0: V) => T) | $Function<any, T>): $Function<V, R>;
         identity<T>(): $Function<T, T>;
     }
 
@@ -73,7 +73,7 @@ declare module "java:java/util/function" {
 
     export interface $IntConsumer {
         accept(arg0: number): void;
-        andThen(arg0: $IntConsumer): $IntConsumer;
+        andThen(arg0: ((arg0: number) => void) | $IntConsumer): $IntConsumer;
     }
 
     export interface $IntFunction<R> {
@@ -81,9 +81,9 @@ declare module "java:java/util/function" {
     }
 
     export interface $IntPredicate {
-        and(arg0: $IntPredicate): $IntPredicate;
+        and(arg0: ((arg0: number) => boolean) | $IntPredicate): $IntPredicate;
         negate(): $IntPredicate;
-        or(arg0: $IntPredicate): $IntPredicate;
+        or(arg0: ((arg0: number) => boolean) | $IntPredicate): $IntPredicate;
         test(arg0: number): boolean;
     }
 
@@ -100,9 +100,9 @@ declare module "java:java/util/function" {
     }
 
     export interface $IntUnaryOperator {
-        andThen(arg0: $IntUnaryOperator): $IntUnaryOperator;
+        andThen(arg0: ((arg0: number) => number) | $IntUnaryOperator): $IntUnaryOperator;
         applyAsInt(arg0: number): number;
-        compose(arg0: $IntUnaryOperator): $IntUnaryOperator;
+        compose(arg0: ((arg0: number) => number) | $IntUnaryOperator): $IntUnaryOperator;
         identity(): $IntUnaryOperator;
     }
 
@@ -112,7 +112,7 @@ declare module "java:java/util/function" {
 
     export interface $LongConsumer {
         accept(arg0: number): void;
-        andThen(arg0: $LongConsumer): $LongConsumer;
+        andThen(arg0: ((arg0: number) => void) | $LongConsumer): $LongConsumer;
     }
 
     export interface $LongFunction<R> {
@@ -120,9 +120,9 @@ declare module "java:java/util/function" {
     }
 
     export interface $LongPredicate {
-        and(arg0: $LongPredicate): $LongPredicate;
+        and(arg0: ((arg0: number) => boolean) | $LongPredicate): $LongPredicate;
         negate(): $LongPredicate;
-        or(arg0: $LongPredicate): $LongPredicate;
+        or(arg0: ((arg0: number) => boolean) | $LongPredicate): $LongPredicate;
         test(arg0: number): boolean;
     }
 
@@ -139,9 +139,9 @@ declare module "java:java/util/function" {
     }
 
     export interface $LongUnaryOperator {
-        andThen(arg0: $LongUnaryOperator): $LongUnaryOperator;
+        andThen(arg0: ((arg0: number) => number) | $LongUnaryOperator): $LongUnaryOperator;
         applyAsLong(arg0: number): number;
-        compose(arg0: $LongUnaryOperator): $LongUnaryOperator;
+        compose(arg0: ((arg0: number) => number) | $LongUnaryOperator): $LongUnaryOperator;
         identity(): $LongUnaryOperator;
     }
 
@@ -158,11 +158,11 @@ declare module "java:java/util/function" {
     }
 
     export interface $Predicate<T> {
-        and(arg0: $Predicate<any>): $Predicate<T>;
-        isEqual<T>(arg0: object): $Predicate<T>;
+        and(arg0: ((arg0: T) => boolean) | $Predicate<any>): $Predicate<T>;
+        isEqual<T>(arg0: any): $Predicate<T>;
         negate(): $Predicate<T>;
-        not<T>(arg0: $Predicate<any>): $Predicate<T>;
-        or(arg0: $Predicate<any>): $Predicate<T>;
+        not<T>(arg0: ((arg0: T) => boolean) | $Predicate<any>): $Predicate<T>;
+        or(arg0: ((arg0: T) => boolean) | $Predicate<any>): $Predicate<T>;
         test(arg0: T): boolean;
     }
 
