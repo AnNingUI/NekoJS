@@ -1,4 +1,4 @@
-import { $Appendable, $CharSequence, $Comparable, $Readable, $String } from "java:java/lang";
+import { $Appendable, $CharSequence, $Comparable, $Comparable_, $Readable, $Readable_, $String } from "java:java/lang";
 import { $IntStream } from "java:java/util/stream";
 
 export * as charset from "java:java/nio/charset";

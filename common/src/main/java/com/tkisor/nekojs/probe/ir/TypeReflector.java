@@ -365,6 +365,9 @@ public final class TypeReflector {
         if (type instanceof GenericArrayType gat) return ApiTypeRef.array(toRef(gat.getGenericComponentType()));
         if (type instanceof TypeVariable<?> tv) return ApiTypeRef.typeVariable(tv.getName());
         if (type instanceof WildcardType wt) {
+            // 实验：? super X 的下界 X 才是消费者需要的类型（`?` 无界通配符仍回落 any）
+            Type[] lower = wt.getLowerBounds();
+            if (lower.length > 0) return toRef(lower[0]);
             Type[] upper = wt.getUpperBounds();
             if (upper.length > 0 && upper[0] != Object.class) return toRef(upper[0]);
             return ApiTypeRef.primitive("any");

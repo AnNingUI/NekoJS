@@ -1,5 +1,6 @@
 import { $InputStream, $OutputStream, $Serializable } from "java:java/io";
-import { $Class, $Comparable, $String } from "java:java/lang";
+import { $Class, $Comparable, $Comparable_, $String } from "java:java/lang";
+import { $URLStreamHandler } from "java:java/net";
 import { $Permission } from "java:java/security";
 import { $List, $Map } from "java:java/util";
 
@@ -98,7 +99,7 @@ declare module "java:java/net" {
         get userInfo(): string;
         getUserInfo(): string;
         static of(arg0: $URI, arg1: $URLStreamHandler): $URL;
-        static setURLStreamHandlerFactory(arg0: $URLStreamHandlerFactory): void;
+        static setURLStreamHandlerFactory(arg0: $URLStreamHandlerFactory_): void;
         equals(arg0: object): boolean;
         getContent(arg0: $Class<any>[]): object;
         hashCode(): number;
@@ -197,4 +198,5 @@ declare module "java:java/net" {
         createURLStreamHandler(arg0: string): $URLStreamHandler;
     }
 
+    export type $URLStreamHandlerFactory_ = (arg0: string) => $URLStreamHandler;
 }

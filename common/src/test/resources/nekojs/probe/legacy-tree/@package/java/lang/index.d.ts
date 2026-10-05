@@ -1,6 +1,6 @@
 import { $InputStream, $Serializable } from "java:java/io";
 import { $Annotation } from "java:java/lang/annotation";
-import { $ClassDesc, $Constable, $ConstantDesc, $DynamicConstantDesc } from "java:java/lang/constant";
+import { $ClassDesc, $Constable, $Constable_, $ConstantDesc, $ConstantDesc_, $DynamicConstantDesc } from "java:java/lang/constant";
 import { $MethodHandles$Lookup, $TypeDescriptor$OfField } from "java:java/lang/invoke";
 import { $Configuration, $ModuleDescriptor } from "java:java/lang/module";
 import { $AccessFlag, $AccessFlag_, $AnnotatedElement, $AnnotatedType, $Constructor, $Field, $GenericDeclaration, $Method, $RecordComponent, $Type, $TypeVariable } from "java:java/lang/reflect";
@@ -9,7 +9,7 @@ import { $CharBuffer } from "java:java/nio";
 import { $Charset } from "java:java/nio/charset";
 import { $ProtectionDomain } from "java:java/security";
 import { $Comparator, $Enumeration, $Iterator, $List, $Locale, $Optional, $Set, $Spliterator } from "java:java/util";
-import { $Consumer, $Function } from "java:java/util/function";
+import { $Consumer, $Consumer_, $Function, $Function_ } from "java:java/util/function";
 import { $IntStream, $Stream } from "java:java/util/stream";
 
 export * as constant from "java:java/lang/constant";
@@ -335,8 +335,8 @@ declare module "java:java/lang" {
         getSigners(): object[];
         get simpleName(): string;
         getSimpleName(): string;
-        get superclass(): $Class<any>;
-        getSuperclass(): $Class<any>;
+        get superclass(): $Class<T>;
+        getSuperclass(): $Class<T>;
         get typeName(): string;
         getTypeName(): string;
         get typeParameters(): $TypeVariable<$Class<T>>[];
@@ -565,7 +565,7 @@ declare module "java:java/lang" {
     }
 
     export interface $Iterable<T> {
-        forEach(arg0: $Consumer<any>): void;
+        forEach(arg0: $Consumer_<T>): void;
         iterator(): $Iterator<T>;
         spliterator(): $Spliterator<T>;
     }
@@ -670,12 +670,12 @@ declare module "java:java/lang" {
         static boot(): $ModuleLayer;
         static defineModulesWithManyLoaders(arg0: $Configuration, arg1: $ModuleLayer[], arg2: $ClassLoader): $ModuleLayer$Controller;
         static defineModulesWithOneLoader(arg0: $Configuration, arg1: $ModuleLayer[], arg2: $ClassLoader): $ModuleLayer$Controller;
-        static defineModules(arg0: $Configuration, arg1: $ModuleLayer[], arg2: $Function<string, $ClassLoader>): $ModuleLayer$Controller;
+        static defineModules(arg0: $Configuration, arg1: $ModuleLayer[], arg2: $Function_<string, $ClassLoader>): $ModuleLayer$Controller;
         static empty(): $ModuleLayer;
         configuration(): $Configuration;
         defineModulesWithManyLoaders(arg0: $Configuration, arg1: $ClassLoader): $ModuleLayer;
         defineModulesWithOneLoader(arg0: $Configuration, arg1: $ClassLoader): $ModuleLayer;
-        defineModules(arg0: $Configuration, arg1: $Function<string, $ClassLoader>): $ModuleLayer;
+        defineModules(arg0: $Configuration, arg1: $Function_<string, $ClassLoader>): $ModuleLayer;
         findLoader(arg0: string): $ClassLoader;
         findModule(arg0: string): $Optional<$Module>;
         modules(): $Set<$Module>;
@@ -766,7 +766,7 @@ declare module "java:java/lang" {
         static format(arg0: string, arg1?: object[]): string;
         static format(arg0: $Locale, arg1: string, arg2?: object[]): string;
         static join(arg0: $CharSequence, arg1?: $CharSequence[]): string;
-        static join(arg0: $CharSequence, arg1: $Iterable<$CharSequence>): string;
+        static join(arg0: $CharSequence, arg1: $Iterable_<$CharSequence>): string;
         static valueOf(arg0: boolean): string;
         static valueOf(arg0: string[], arg1: number, arg2: number): string;
         static valueOf(arg0: string[]): string;
@@ -840,7 +840,7 @@ declare module "java:java/lang" {
         toString(): string;
         toUpperCase(arg0: $Locale): string;
         toUpperCase(): string;
-        transform<R>(arg0: $Function<any, R>): R;
+        transform<R>(arg0: $Function_<string, R>): R;
         translateEscapes(): string;
         trim(): string;
     }
@@ -949,5 +949,9 @@ declare module "java:java/lang" {
         toString(): string;
     }
 
-    export type $Iterable_<T> = T[];
+    export type $AutoCloseable_ = () => void;
+    export type $Comparable_<T> = (arg0: T) => number;
+    export type $Iterable_<T> = () => T;
+    export type $Readable_ = (arg0: $CharBuffer) => number;
+    export type $Runnable_ = () => void;
 }

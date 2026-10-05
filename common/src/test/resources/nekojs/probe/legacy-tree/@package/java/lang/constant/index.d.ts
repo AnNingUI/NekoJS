@@ -1,4 +1,5 @@
 import { $Class, $Enum, $String } from "java:java/lang";
+import { $ConstantDesc, $ConstantDesc_ } from "java:java/lang/constant";
 import { $MethodHandle, $MethodHandles$Lookup, $MethodType, $TypeDescriptor$OfField, $TypeDescriptor$OfMethod } from "java:java/lang/invoke";
 import { $List, $Optional } from "java:java/util";
 
@@ -60,9 +61,9 @@ declare module "java:java/lang/constant" {
     }
 
     export class $DynamicConstantDesc<T> implements $ConstantDesc {
-        static ofCanonical<T>(arg0: $DirectMethodHandleDesc, arg1: string, arg2: $ClassDesc, arg3: $ConstantDesc[]): $ConstantDesc;
-        static ofNamed<T>(arg0: $DirectMethodHandleDesc, arg1: string, arg2: $ClassDesc, arg3?: $ConstantDesc[]): $DynamicConstantDesc<T>;
-        static of<T>(arg0: $DirectMethodHandleDesc, arg1?: $ConstantDesc[]): $DynamicConstantDesc<T>;
+        static ofCanonical<T>(arg0: $DirectMethodHandleDesc, arg1: string, arg2: $ClassDesc, arg3: $ConstantDesc_[]): $ConstantDesc;
+        static ofNamed<T>(arg0: $DirectMethodHandleDesc, arg1: string, arg2: $ClassDesc, arg3?: $ConstantDesc_[]): $DynamicConstantDesc<T>;
+        static of<T>(arg0: $DirectMethodHandleDesc, arg1?: $ConstantDesc_[]): $DynamicConstantDesc<T>;
         static of<T>(arg0: $DirectMethodHandleDesc): $DynamicConstantDesc<T>;
         bootstrapArgsList(): $List<$ConstantDesc>;
         bootstrapArgs(): $ConstantDesc[];
@@ -106,5 +107,7 @@ declare module "java:java/lang/constant" {
         returnType(): $ClassDesc;
     }
 
+    export type $Constable_ = () => $Optional<$ConstantDesc_>;
+    export type $ConstantDesc_ = (arg0: $MethodHandles$Lookup) => object;
     export type $DirectMethodHandleDesc$Kind_ = $DirectMethodHandleDesc$Kind | "CONSTRUCTOR" | "GETTER" | "INTERFACE_SPECIAL" | "INTERFACE_STATIC" | "INTERFACE_VIRTUAL" | "SETTER" | "SPECIAL" | "STATIC" | "STATIC_GETTER" | "STATIC_SETTER" | "VIRTUAL";
 }

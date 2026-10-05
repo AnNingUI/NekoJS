@@ -1,4 +1,4 @@
-import { $CharSequence, $Comparable, $String } from "java:java/lang";
+import { $CharSequence, $Comparable, $Comparable_, $String } from "java:java/lang";
 import { $ByteBuffer, $CharBuffer } from "java:java/nio";
 import { $Locale, $Set, $SortedMap } from "java:java/util";
 
