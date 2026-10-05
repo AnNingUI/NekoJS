@@ -11,7 +11,7 @@ declare module "java:java/util/function" {
         apply(arg0: T, arg1: U): R;
     }
 
-    export interface $BinaryOperator<T> extends $BiFunction {
+    export interface $BinaryOperator<T> extends $BiFunction<T, T, T> {
         maxBy<T>(arg0: $Comparator<T>): $BinaryOperator<T>;
         minBy<T>(arg0: $Comparator<T>): $BinaryOperator<T>;
     }
@@ -182,7 +182,7 @@ declare module "java:java/util/function" {
         applyAsLong(arg0: T): number;
     }
 
-    export interface $UnaryOperator<T> extends $Function {
+    export interface $UnaryOperator<T> extends $Function<T, T> {
         identity<T>(): $UnaryOperator<T>;
     }
 

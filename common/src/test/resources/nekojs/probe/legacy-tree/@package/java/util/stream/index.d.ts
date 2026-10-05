@@ -35,7 +35,7 @@ declare module "java:java/util/stream" {
         static valueOf(name: string): $Collector$Characteristics;
     }
 
-    export interface $DoubleStream extends $BaseStream {
+    export interface $DoubleStream extends $BaseStream<number, $DoubleStream> {
         allMatch(arg0: $DoublePredicate_): boolean;
         anyMatch(arg0: $DoublePredicate_): boolean;
         average(): $OptionalDouble;
@@ -92,7 +92,7 @@ declare module "java:java/util/stream" {
         accept(arg0: number, arg1: $DoubleConsumer_): void;
     }
 
-    export interface $IntStream extends $BaseStream {
+    export interface $IntStream extends $BaseStream<number, $IntStream> {
         allMatch(arg0: $IntPredicate_): boolean;
         anyMatch(arg0: $IntPredicate_): boolean;
         asDoubleStream(): $DoubleStream;
@@ -153,7 +153,7 @@ declare module "java:java/util/stream" {
         accept(arg0: number, arg1: $IntConsumer_): void;
     }
 
-    export interface $LongStream extends $BaseStream {
+    export interface $LongStream extends $BaseStream<number, $LongStream> {
         allMatch(arg0: $LongPredicate_): boolean;
         anyMatch(arg0: $LongPredicate_): boolean;
         asDoubleStream(): $DoubleStream;
@@ -213,7 +213,7 @@ declare module "java:java/util/stream" {
         accept(arg0: number, arg1: $LongConsumer_): void;
     }
 
-    export interface $Stream<T> extends $BaseStream {
+    export interface $Stream<T> extends $BaseStream<T, $Stream<T>> {
         allMatch(arg0: $Predicate_<T>): boolean;
         anyMatch(arg0: $Predicate_<T>): boolean;
         builder<T>(): $Stream$Builder<T>;
@@ -264,7 +264,7 @@ declare module "java:java/util/stream" {
         toList(): $List<T>;
     }
 
-    export interface $Stream$Builder<T> extends $Consumer {
+    export interface $Stream$Builder<T> extends $Consumer<T> {
         accept(arg0: T): void;
         add(arg0: T): $Stream$Builder<T>;
         build(): $Stream<T>;

@@ -3,6 +3,7 @@ package com.tkisor.nekojs.probe.ir;
 import com.tkisor.nekojs.api.JavaMemberIndex;
 import com.tkisor.nekojs.api.surface.ApiSymbolId;
 import com.tkisor.nekojs.api.surface.ApiTypeRef;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
@@ -102,6 +103,20 @@ public final class TypeReflector {
     private static String typeKey(TypeSlot slot) {
         if (slot == null || slot.sourceType == null) return "";
         return slot.sourceType.getTypeName();
+    }
+
+    /**
+     * 解析类型对应的原始类；泛型/通配符等非 Class 形态返回 {@code null}。
+     *
+     * <p>用于 {@code getGenericSuperclass()}/{@code getGenericInterfaces()} 的返回值——
+     * 它们可能是 {@link ParameterizedType}，而 {@link TypeSlot#sourceType} 与
+     * {@link Class#getSimpleName()} 这类用法都需要裸 {@code Class}。
+     */
+    @Nullable
+    private static Class<?> rawClassOf(Type type) {
+        if (type instanceof Class<?> c) return c;
+        if (type instanceof ParameterizedType pt && pt.getRawType() instanceof Class<?> raw) return raw;
+        return null;
     }
 
     private void reflectClassMembers(Class<?> cls, TypeDecl decl) {
